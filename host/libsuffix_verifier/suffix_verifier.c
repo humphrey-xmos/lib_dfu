@@ -25,7 +25,7 @@ int verify_dfu_suffix(const unsigned char *file, size_t num_bytes,
   }
 
   unsigned crc = crc_init();
-  for (int i = 0; i < num_bytes - sizeof(struct dfu_suffix); i++) {
+  for (unsigned i = 0; i < num_bytes - sizeof(struct dfu_suffix); i++) {
     crc_step(&crc, file[i]);
   }
   crc = crc_finish(crc);
