@@ -1,6 +1,11 @@
 DFU library change log
 ======================
 
+1.0.2
+-----
+
+  * FIXED: Windows compile warnings
+
 1.0.1
 -----
 
