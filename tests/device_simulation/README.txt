@@ -9,13 +9,13 @@ Convention is that pass is when last line of test output is 'PASS'
 Build is using Waf with a customised top level script that traverses test
 subdirectories and builds each test
 
-To run all tests in Pipenv I might do:
+To run all tests in virtual environment I might do:
 
   waf configure clean build
-  pipenv run pytest -s
+  ../../.venv/bin/pytest -s
 
 I've also added a __main__ trigger, so I can invoke the test script outside of
-Pipenv:
+virtual environment:
 
   waf configure clean build
   find . -name test_\*.py | while read f ; do \
