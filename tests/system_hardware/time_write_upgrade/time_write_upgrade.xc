@@ -13,20 +13,20 @@
 #include "xassert.h"
 
 #define DEBUG_UNIT TEST
-#define DEBUG_PRINT_ENABLE_TEST 0
+#define DEBUG_PRINT_ENABLE_TEST 0 // requires xSCOPE
 #include "debug_print.h"
 
+#include "quadflash_extra.h"
 #include "dfu.h"
 
 fl_QSPIPorts ports = {
   PORT_SQI_CS, PORT_SQI_SCLK, PORT_SQI_SIO, XS1_CLKBLK_1
 };
 
-fl_QuadDeviceSpec spec[] = { // IS25LQ016B
-  { 0, 256, 8192, 3, 8, 0x9F, 0, 3, 0x9D4015, 0x20, 4096, 0x06, 0x04,
-    PROT_TYPE_NONE, {{0,0},{0x00,0x00}}, 0x02, 0xEB, 1,
-    SECTOR_LAYOUT_REGULAR, {4096,{0,{0}}}, 0x05, 0x01, 0x01
-  }
+fl_QuadDeviceSpec spec = { // IS25LQ016B
+  0, 256, 8192, 3, 8, 0x9F, 0, 3, 0x9D4015, 0x20, 4096, 0x06, 0x04,
+  PROT_TYPE_NONE, {{0,0},{0x00,0x00}}, 0x02, 0xEB, 1,
+  SECTOR_LAYOUT_REGULAR, {4096,{0,{0}}}, 0x05, 0x01, 0x01
 };
 
 struct {
@@ -47,7 +47,7 @@ static void t_end(void) {
   int end;
   t :> end;
   if (end - start >= timing.threshold) {
-    debug_printf("%d: %d\n", timing.locator, end - start);
+    debug_printf("%d: %d\n", timing.locator, end - start); // requires xSCOPE
     assert(0);
   }
 }
@@ -57,7 +57,7 @@ void write_begin(void)
   enum dfu_state state;
   int ret;
 
-  ret = fl_connectToDevice(ports, spec, 1);
+  ret = fl_connectToOneDevice(ports, spec);
   assert(ret == 0);
 
   dfu_locate_upgrade_slots();
@@ -76,7 +76,7 @@ void write_begin(void)
   t_end();
   assert(state == APP_DETACH);
 
-  ret = fl_connectToDevice(ports, spec, 1);
+  ret = fl_connectToOneDevice(ports, spec);
   assert(ret == 0);
 
   t_start(4);
