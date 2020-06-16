@@ -10,3 +10,4 @@ Pipfile.lock
 CMakeFiles
 CMakeCache.txt
 cmake_install.cmake
+__pycache__
