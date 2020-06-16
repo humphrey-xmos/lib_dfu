@@ -104,7 +104,7 @@ static const char * unsafe status_str(enum dfu_status s)
       case ERR_TARGET:                return "errTARGET";
       case ERR_FILE:                  return "errFILE";
       case ERR_WRITE:                 return "errWRITE";
-      case ERR_ERASE:                 return "errFILE";
+      case ERR_ERASE:                 return "errERASE";
       case ERR_CHECK_ERASED:          return "errCHECK_ERASED";
       case ERR_PROG:                  return "errPROG";
       case ERR_VERIFY:                return "errVERIFY";

@@ -5,10 +5,10 @@ import pathlib
 
 HOME = str(pathlib.Path(__file__).resolve().parent)
 
-def test_basic_generator():
+def test_without_bcddevice():
     os.chdir(HOME)
     cmd = ['bin/dfu_suffix_generator',
-           '0x20B1', '0x0014', '0x0102', 'input.bin', 'output.bin' ]
+           '0x20B1', '0x0014', 'input.bin', 'output.bin' ]
     try:
         output = subprocess.check_output(cmd)
     except subprocess.CalledProcessError as e:
@@ -25,5 +25,5 @@ def test_basic_generator():
     print('PASS')
 
 if __name__ == "__main__":
-    print('test_basic_generator')
-    test_basic_generator()
+    print('test_without_bcddevice')
+    test_without_bcddevice()

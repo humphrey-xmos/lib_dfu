@@ -7,6 +7,7 @@
 int verify_dfu_suffix(const unsigned char *file, size_t num_bytes,
                       unsigned short vendor_id,
                       unsigned short product_id,
+                      unsigned short bcd_device,
                       size_t *suffix_length, char msg[256]);
 
 #endif

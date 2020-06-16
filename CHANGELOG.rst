@@ -1,10 +1,22 @@
 DFU library change log
 ======================
 
+1.0.5
+-----
+
+  * FIXED: Suffix generator and verifier byte-order portability
+  * FIXED: Build suffix generator in release mode to reduce number of
+    dynamically linked libraries
+
+1.0.4
+-----
+
+  * CHANGED: Include bcdDevice in suffix
+
 1.0.3
 -----
 
-  * ADD: Switch to newly added single-spec flash connect function
+  * ADDED: Switch to newly added single-spec flash connect function
 
 1.0.2
 -----
