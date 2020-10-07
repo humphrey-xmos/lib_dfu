@@ -1,6 +1,12 @@
 DFU library change log
 ======================
 
+1.0.6
+-----
+
+  * CHANGED: Pin Python package versions
+  * REMOVED: not necessary cpanfile
+
 1.0.5
 -----
 
