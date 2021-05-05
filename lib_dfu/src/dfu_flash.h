@@ -1,4 +1,5 @@
-// Copyright (c) 2019-2020, XMOS Ltd, All rights reserved
+// Copyright 2019-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 //
 // The original intention is for those functions to be the ones used by the
 // DFU implementation, and those only

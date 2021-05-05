@@ -1,4 +1,5 @@
-# Copyright (c) 2020, XMOS Ltd, All rights reserved
+# Copyright 2020-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import sys
 
 def make_test_json(file_name, compatibility_version, item_length):
