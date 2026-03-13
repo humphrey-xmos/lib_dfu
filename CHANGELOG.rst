@@ -1,12 +1,25 @@
 lib_dfu change log
 ==================
 
-UNRELEASED
-----------
+2.0.0
+-----
 
   * ADDED:    Support for XCommon-CMake build system
-  * CHANGED:  Migrated USB DFU support from ``lib_xua``.
+  * ADDED:    Example I2C DFU device and host for XCORE
+  * ADDED:    I2C DFU host app ``dfu_i2c`` for Raspberry Pi
+  * ADDED:    DFU types now common with ``lib_xua``
   * CHANGED:  Moved `xmosdfu` application from ``lib_xua``.
+  * CHANGED:  Migrated from ``lib_flash_data_partition`` to XMOS tools
+    ``quadflash`` library for flash access
+  * CHANGED:  Moved file dfu_control_server.xc from ``lib_device_control``.
+
+  * Changes to dependencies:
+
+    - lib_flash_data_partition: Removed dependency
+
+    - lib_logging: 3.0.0 -> 3.4.0
+
+    - lib_xassert: 4.0.0 -> 4.3.2
 
 1.1.0
 -----
