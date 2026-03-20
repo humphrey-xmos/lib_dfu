@@ -2,9 +2,8 @@
 
 **CHANGELOG*
 **LICENSE*
+**.venv*
 
 # Do not build .md files
 *.md
 **/*.md
-
-examples/**/*.rst

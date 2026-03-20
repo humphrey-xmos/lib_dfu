@@ -4,7 +4,9 @@ lib_dfu change log
 UNRELEASED
 ----------
 
-  * ADDED: Support for XCommon-CMake build system
+  * ADDED:    Support for XCommon-CMake build system
+  * CHANGED:  Migrated USB DFU support from ``lib_xua``.
+  * CHANGED:  Moved `xmosdfu` application from ``lib_xua``.
 
 1.1.0
 -----

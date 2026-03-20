@@ -45,6 +45,13 @@
 
 /**
  * DFU request types
+ * 
+ * Largely follows the USB DFU class specification requests, with some additional custom requests
+ * for non-USB transports and deferred actions.
+ * Deferred action requests are not actual requests sent by the host, but are used internally to
+ * indicate slow operations to carry out after responding to the initial request, such as flash
+ * programming and rebooting, which cannot be completed within the time constraints of a single
+ * request/response transaction.
  */
 enum dfu_cmd_request {
   // USB spec DFU commands
@@ -57,8 +64,8 @@ enum dfu_cmd_request {
   DFU_ABORT = 6, // TODO - fully support
 
   // XMOS custom DFU commands - values chosen to avoid conflict with standard DFU requests
-  XMOS_DFU_BUS_RESET = 9,       // For simulating bus/device reset on transports other than USB.
-  XMOS_DFU_GET_DESCRIPTOR = 10, // For simulating getting a descriptor on transports other than USB.
+  XMOS_DFU_BUS_RESET = 9,       //!< For emulating bus/device reset on transports other than USB.
+  XMOS_DFU_GET_DESCRIPTOR = 10, //!< For emulating getting a descriptor on transports other than USB.
 
   // Not actual requests, used internally to indicate deferred actions to be taken after responding to a request.
   DFU_DEFERRED_ACTION_REBOOT = 20,
@@ -71,12 +78,12 @@ enum dfu_cmd_request {
 
   XMOS_DFU_GETPROFILE = 40, // For getting DFU profile data such as command execution time, for profiling and testing purposes.
 
-  /* For lib_device_control access this will be 0x71 due to read bit */
-  XMOS_DFU_REVERTFACTORY = 0xF1,
+  /** Additional command that erases only the first flash sector of the upgrade image, to revert to the factory image */
+  XMOS_DFU_REVERTFACTORY = 0xF1, // For lib_device_control access this will be 0x71 due to read bit
 };
 
 /**
- * DFU interface state machine
+ * DFU state machine states, from USB DFU spec v1.1
  */
 enum dfu_state {
   STATE_APP_IDLE,
@@ -93,7 +100,7 @@ enum dfu_state {
 };
 
 /**
- * DFU device status code
+ * DFU device status code, from USB DFU spec v1.1
  */
 enum dfu_status {
   DFU_OK,
@@ -115,7 +122,7 @@ enum dfu_status {
 };
 
 /**
- * Return value of GETSTATUS request
+ * Return value of GETSTATUS request, in machine native types, from USB DFU spec v1.1
  */
 struct dfu_getstatus {
   enum dfu_status status; /**< DFU Status code */
@@ -123,6 +130,9 @@ struct dfu_getstatus {
   unsigned poll_timeout_msec; /**< Poll timeout in milliseconds */
 };
 
+/**
+ * DFU profile data for timing and testing purposes, returned by XMOS_DFU_GETPROFILE request
+ */
 struct dfu_profile_data {
     unsigned command_time;
     unsigned command_index;

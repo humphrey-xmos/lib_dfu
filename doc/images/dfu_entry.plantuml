@@ -1,0 +1,17 @@
+@startuml
+
+!include puml-theme-xmos.puml
+
+participant Host as H
+participant Device as D
+
+D -> D : Boot in APP mode
+H -> D : DFU_DETACH
+D -> D : Reboot
+H -> D : bus-reset to enumerate device
+D -> D : Enter DFU mode
+
+H -> D : DFU_GETSTATE
+D --> H : State=dfuIDLE
+
+@enduml
