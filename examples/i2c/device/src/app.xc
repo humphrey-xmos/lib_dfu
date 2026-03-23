@@ -44,7 +44,11 @@ void app(server interface control i_control)
           ret = CONTROL_ERROR;
           break;
         }
-        test_value = payload[0];
+        if (payload_len > 0) {
+          test_value = payload[0];
+        } else {
+          test_value = 0;
+        }
         ret = CONTROL_SUCCESS;
         break;
 
@@ -61,12 +65,10 @@ void app(server interface control i_control)
           ret = CONTROL_ERROR;
           break;
         }
-        if (payload_len != 1) {
-          printf("expecting 1 read byte, not %d\n", payload_len);
-          ret = CONTROL_ERROR;
-          break;
+        // Simple test: fill the payload with the last written value
+        for (unsigned i = 0; i < payload_len; i++) {
+          payload[i] = test_value;
         }
-        payload[0] = test_value;
         ret = CONTROL_SUCCESS;
         break;
     }
