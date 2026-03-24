@@ -85,4 +85,13 @@
 #endif
 #endif
 
+/** Main control for the DFU lib_control_device server functionality.
+ * When enabled, the DFU library will include the control server for non-USB transports.
+ * When disabled, the control server will be excluded.
+ * \note Requires lib_device_control to be added to `APP_DEPENDENT_MODULES` to use.
+ */
+#ifndef DFU_CONTROL_SERVER
+#define DFU_CONTROL_SERVER 0
+#endif
+
 #endif /* DFU_DEFAULT_CONF_H */

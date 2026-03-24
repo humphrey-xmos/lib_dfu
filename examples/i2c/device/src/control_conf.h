@@ -7,6 +7,4 @@
 #define CONTROL_INTERFACES_NUM 1
 #define CONTROL_USE_I2C 1
 
-#define CONTROL_APP_DFU 1
-
 #endif // CONTROL_CONF_H

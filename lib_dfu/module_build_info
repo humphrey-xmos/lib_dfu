@@ -6,7 +6,7 @@ DEPENDENT_MODULES = lib_xassert(>=4.3.2) \
 MODULE_XCC_FLAGS = $(XCC_FLAGS) -Os -g -Wall -Wextra -Wshadow \
                     -Wconversion -Wdiv-by-zero -Wfloat-equal -Wsign-compare
 
-SOURCE_DIRS = src src/modules src/usb flash/quad
+SOURCE_DIRS = src src/modules src/usb src/control flash/quad
 
 INCLUDE_DIRS = api $(SOURCE_DIRS)
 
