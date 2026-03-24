@@ -93,12 +93,12 @@ def remote_pi(settings):
 
     print("Configuring and building host code on RPi...")
     conn.run(f"""
-        cd {REMOTE_DIR} &&
-        cd lib_dfu/host/dfu_i2c/ &&
+        cd {REMOTE_DIR}/lib_dfu/host/dfu_i2c/ &&
+        rm -rf build &&
         cmake -B build &&
-        cmake --build build -j 4
-        cd {REMOTE_DIR} &&
-        cd lib_dfu/host/suffix_generator/ &&
+        cmake --build build -j 4 &&
+        cd {REMOTE_DIR}/lib_dfu/host/suffix_generator/ &&
+        rm -rf build &&
         cmake -B build &&
         cmake --build build -j 4
     """, in_stream=False, hide=True)
