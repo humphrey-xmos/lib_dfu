@@ -94,7 +94,7 @@
 
 /** Clock block for use by DFU flash operations */
 #ifndef CLKBLK_DFU_FLASHLIB
-#ifdef __xcore__
+#if defined(__xcore__) || defined(__DOXYGEN__)
 #define CLKBLK_DFU_FLASHLIB XS1_CLKBLK_1
 #endif
 #endif

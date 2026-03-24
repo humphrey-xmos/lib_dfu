@@ -111,16 +111,16 @@ For full details of all configuration options please see the `DFU Configuration 
 DFU Resources
 =============
 
-The DFU implementation in ``lib_dfu`` uses the a number of threads to perform the DFU process,
-these are outlined in :numref:`dfu_threads`.
+The DFU implementation in ``lib_dfu`` uses a number of threads to perform the DFU process,
+which are outlined in :numref:`dfu_threads`.
 
-For USB transports the there is the USB ``lib_xud`` thread which handles the USB communication, these are passed to
-the ``endpoint0`` thread which receives the DFU commands from the host, and sends them to the DFU task. Due to the
-use of the ``i_dfu`` interface the DFU task is be ``distributable`` and thus called direct from the ``endpoint0`` thread,
+For USB transports, there is the USB ``lib_xud`` thread, which handles the USB communication and passes it to
+the ``endpoint0`` thread. The ``endpoint0`` thread receives the DFU commands from the host and sends them to the DFU task. Due to the
+use of the ``i_dfu`` interface, the DFU task can be ``distributable`` and thus called directly from the ``endpoint0`` thread,
 so no additional threads are needed for the DFU task.
 
-The non-USB transports there is a thread for the physical transport layer, a thread for the ``control`` client and one thread for the 
-``control`` server with DFU task. Three threads in total.
+For non-USB transports, there is a thread for the physical transport layer, a thread for the ``control`` client, and one thread for the 
+``control`` server with the DFU task. Three threads in total.
 
 .. figure:: ../images/DFU_Thread_Diagram.drawio.png
    :width: 60%
@@ -152,7 +152,7 @@ The main stages of the product are:
 3. **Maintenance**: During this stage, the device is in use and may require firmware updates to add new features or fix bugs. The DFU functionality should be reliable and secure to ensure that firmware updates can be performed without issues.
 4. **End of Life**: During this stage, the device is no longer supported and may not receive firmware updates. The DFU functionality may still be present, but it may not be secure or reliable. This can also include decommissioning of the device, where the DFU functionality can be used to erase the firmware and render the device inoperable.
 
-By carefully considering the DFU lifecycle and designing the DFU functionality accordingly, can help ensure that the device is secure and provides a good user experience throughout its lifecycle.
+Carefully considering the DFU lifecycle, and designing the DFU functionality accordingly, can help ensure that the device is secure and provides a good user experience throughout its lifecycle.
 
 DFU and Device Security
 =======================
@@ -209,34 +209,34 @@ the mode switch by querying the device for its descriptors.
 Once the device is in DFU mode, the DFU interface can accept commands defined by the
 `DFU 1.1 class specification <https://www.usb.org/sites/default/files/DFU_1.1.pdf>`_.
 
- .. uml:: ../images/dfu_entry.plantuml
-    :caption: Message sequence chart for the DFU entry operation
-    :align: center
-    :width: 40%
-    :name: dfu_entry_seq_diag
+.. uml:: ../images/dfu_entry.plantuml
+   :caption: Message sequence chart for the DFU entry operation
+   :align: center
+   :width: 40%
+   :name: dfu_entry_seq_diag
 
 After detaching the device, the host proceeds with the DFU download/upload commands to write/read the firmware upgrade image to/from the device.
 
 During the DFU download process, on receiving the first ``DFU_DNLOAD`` command (``wBlockNum`` is typically 0), the device starts to erase
-``FLASH_MAX_UPGRADE_SIZE`` bytes of the upgrade section of the flash, see :numref:`dfu_erase_seq_diag`. This is done by repeatedly calling he flash erase function until the entire upgrade section is erased,
+``FLASH_MAX_UPGRADE_SIZE`` bytes of the upgrade section of the flash, see :numref:`dfu_erase_seq_diag`. This is done by repeatedly calling the flash erase function until the entire upgrade section is erased,
 and can take several seconds. To avoid the ``DFU_DNLOAD`` request timing out, the flash erase is instead done in the ``DFU_GETSTATUS`` handling
 code for block 0. So for block 0, the device ends up returning the status as ``dfuDNBUSY`` several times while the flash
 erase is in progress.
 
- .. uml:: ../images/dfu_erase.plantuml
-    :caption: Message sequence chart for the DFU erase operation
-    :align: center
-    :width: 60%
-    :name: dfu_erase_seq_diag
+.. uml:: ../images/dfu_erase.plantuml
+   :caption: Message sequence chart for the DFU erase operation
+   :align: center
+   :width: 60%
+   :name: dfu_erase_seq_diag
 
 :numref:`dfu_download_seq_diag` describes the DFU download process following the erase operation, where the device receives
 data blocks and writes pages to flash (flash page is typically 256 bytes).
 
- .. uml:: ../images/dfu_download.plantuml
-    :caption: Message sequence chart for the DFU download operation
-    :align: center
-    :width: 60%
-    :name: dfu_download_seq_diag
+.. uml:: ../images/dfu_download.plantuml
+   :caption: Message sequence chart for the DFU download operation
+   :align: center
+   :width: 60%
+   :name: dfu_download_seq_diag
 
 Once the DFU download or upload process is complete, the host sends a bus-reset to the device to switch it back to runtime mode.
 
@@ -437,24 +437,24 @@ This is very similar to building the device example, please follow the build ins
 Example Hardware Setup
 ======================
 
-The example is `XCORE` to `XCORE` over I2C, so two `XCORE` boards are needed. The example was developed and tested using the ``XCORE-AI-EXPLORER`` and the ``XK-VOICE-L71``.
+The example is `XCORE` to `XCORE` over I2C, so two `XCORE` boards are needed. The example was developed and tested using the ``XK-EVK-XU316`` and the ``XK-VOICE-L71``.
 
-Connect three jumper wires between the ``XCORE-AI-EXPLORER`` and the ``XK-VOICE-L71`` to allow the I2C communication between the host and device.
+Connect three jumper wires between the ``XK-EVK-XU316`` and the ``XK-VOICE-L71`` to allow the I2C communication between the host and device.
 
-For the ``XCORE-AI-EXPLORER``, connect the jumper wires as shown in the :numref:`board_xk_ai_explorer`, connecting the I2C `SCL`, `SDA` and `GND` pins to the corresponding pins on the ``XK-VOICE-L71``.
+For the ``XK-EVK-XU316``, connect the jumper wires as shown in the :numref:`board_xk_evk_xu316`, connecting the I2C `SCL`, `SDA` and `GND` pins to the corresponding pins on the ``XK-VOICE-L71``.
 
 .. figure:: ../images/xk_evk_xu316-I2C.png
    :width: 60%
-   :name: board_xk_ai_explorer
+   :name: board_xk_evk_xu316
 
-   XK-VOICE-L71 USB Hardware setup
+   XK-EVK-XU316 I2C Hardware setup
 
 The ``XK-VOICE-L71`` uses the Raspberry Pi GPIO pins for I2C communication. For more information, refer to the
 `Raspberry Pi GPIO Documentation <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#gpio>`_.
 
 To run the example, connect a USB cable to power the ``XK-VOICE-L71`` board as shown in :numref:`board_l71_hw_setup`,
 and plug the XTAG to the board and connect the XTAG USB cable to the development machine. And also connect two
-USB cables to the ``XCORE-AI-EXPLORER`` to power it and allow programming and xscope communication.
+USB cables to the ``XK-EVK-XU316`` to power it and allow programming and xscope communication.
 
 .. figure:: ../images/board_l71_hw_setup.png
    :width: 60%
@@ -529,7 +529,7 @@ between the host and device to show that the communication is working as expecte
    DFU status: 0, timeout: 0 ms, next state: 1
    Sent bus reset command
    DFU status: 0, timeout: 0 ms, next state: 2
-   control write detach command failed with 5
+   control write command 9 failed with 5
    Sent bus reset command
    DFU status: 0, timeout: 0 ms, next state: 0
    Starting Control data example
