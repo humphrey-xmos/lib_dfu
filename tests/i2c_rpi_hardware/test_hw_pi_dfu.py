@@ -18,8 +18,8 @@ def run_dfu_with_retry(remote_pi, args, hide=True, retries=3):
         print(f"run_dfu attempt {attempt + 1}/{retries} failed: {result.stdout} {result.stderr}")
     raise Exception(f"run_dfu failed after {retries} attempts: {args}")
 
-def get_bcd_version(remote_pi):
-    result = run_dfu_with_retry(remote_pi, f"--i2c-address {DEVICE_I2C_ADDRESS} detach_and_bus_reset")
+def get_bcd_version(remote_pi, device_i2c_address):
+    result = run_dfu_with_retry(remote_pi, f"--i2c-address {device_i2c_address} detach_and_bus_reset")
     match = re.search(r"bcdDevice\s+(0x[0-9a-fA-F]+)", result.stdout)
     if not match:
         raise Exception(f"Could not find bcdDevice in output: {result.stdout}")
@@ -58,7 +58,7 @@ def test_dfu_rpi(remote_pi, settings):
     time.sleep(2)  # Wait for device to reboot after factory flash
 
     # Check BCD version is correct before upgrade
-    bcd_version = get_bcd_version(remote_pi)
+    bcd_version = get_bcd_version(remote_pi, DEVICE_I2C_ADDRESS)
     expected_bcd_version = 0x0101
     assert bcd_version == expected_bcd_version, f"Expected factory version {expected_bcd_version:#06x}, got {bcd_version:#06x}"
     print(f"BCD version check OK: {hex(bcd_version)}")
@@ -69,7 +69,7 @@ def test_dfu_rpi(remote_pi, settings):
     run_dfu_with_retry(remote_pi, args)
 
     # Check BCD version is correct after upgrade
-    bcd_version = get_bcd_version(remote_pi)
+    bcd_version = get_bcd_version(remote_pi, DEVICE_I2C_ADDRESS)
     expected_bcd_version = 0x0200
     assert bcd_version == expected_bcd_version, f"Expected factory version {expected_bcd_version:#06x}, got {bcd_version:#06x}"
     print(f"BCD version check OK: {hex(bcd_version)}")
@@ -80,7 +80,7 @@ def test_dfu_rpi(remote_pi, settings):
     run_dfu_with_retry(remote_pi, args)
 
     # Check BCD version is correct after revert
-    bcd_version = get_bcd_version(remote_pi)
+    bcd_version = get_bcd_version(remote_pi, DEVICE_I2C_ADDRESS)
     expected_bcd_version = 0x0101
     assert bcd_version == expected_bcd_version, f"Expected factory version {expected_bcd_version:#06x}, got {bcd_version:#06x}"
     print(f"BCD version check OK: {hex(bcd_version)}")
