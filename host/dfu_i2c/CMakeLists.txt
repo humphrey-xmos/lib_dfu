@@ -7,14 +7,15 @@ set (CMAKE_BUILD_TYPE "Release" CACHE STRING "Only Release mode is allowed" FORC
 
 include(FetchContent)
 
-set(LIB_DEVICE_CONTROL_SOURCE "" CACHE PATH "Use an existing lib_device_control checkout instead of fetching release v5.0.0")
+set(LIB_DEVICE_CONTROL_TAG "v5.0.1")
+set(LIB_DEVICE_CONTROL_SOURCE "" CACHE PATH "Use an existing lib_device_control checkout instead of fetching release ${LIB_DEVICE_CONTROL_TAG}")
 if(LIB_DEVICE_CONTROL_SOURCE)
     set(_LIB_DEVICE_CONTROL_ROOT ${LIB_DEVICE_CONTROL_SOURCE})
 else()
-    message(STATUS "Fetching lib_device_control v5.0.0 release")
+    message(STATUS "Fetching lib_device_control ${LIB_DEVICE_CONTROL_TAG} release")
     FetchContent_Declare(lib_device_control
             GIT_REPOSITORY https://github.com/xmos/lib_device_control.git
-            GIT_TAG v5.0.0
+            GIT_TAG ${LIB_DEVICE_CONTROL_TAG}
     )
     FetchContent_GetProperties(lib_device_control)
     if(NOT lib_device_control_POPULATED)
