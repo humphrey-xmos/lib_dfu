@@ -4,7 +4,6 @@
 #ifndef DFU_CONF_H
 #define DFU_CONF_H
 
-#define FLASH_MAX_UPGRADE_SIZE (128 * 1024)
 #define DFU_CONTROL_SERVER 1
 
 #endif 
