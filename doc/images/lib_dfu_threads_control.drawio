@@ -1,0 +1,55 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0" version="29.6.6">
+  <diagram name="Page-1" id="w8tMVZdSiLP2lVtROLVn">
+    <mxGraphModel dx="2066" dy="1111" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=light-dark(#0080ff, #ededed);fontFamily=Manrope;fontColor=#000000;fillColor=#C0E2FF;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;verticalAlign=top;" value="&lt;div&gt;DFU Thread&lt;/div&gt;" vertex="1">
+          <mxGeometry height="110" width="370" x="381" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-2" edge="1" parent="1" source="tJPKNJdwBcV0syQuOLNN-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jumpStyle=gap;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#222222;fontFamily=Manrope;fontColor=#222222;fillColor=#CCCCCC;" target="tJPKNJdwBcV0syQuOLNN-6" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=light-dark(#0080ff, #ededed);fontFamily=Manrope;fontColor=#000000;fillColor=#C0E2FF;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" value="I2C Slave" vertex="1">
+          <mxGeometry height="60" width="120" x="80" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-4" edge="1" parent="1" source="tJPKNJdwBcV0syQuOLNN-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jumpStyle=gap;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#222222;fontFamily=Manrope;fontColor=#222222;fillColor=#CCCCCC;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" target="tJPKNJdwBcV0syQuOLNN-7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-5" edge="1" parent="1" source="tJPKNJdwBcV0syQuOLNN-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jumpStyle=gap;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#222222;fontFamily=Manrope;fontColor=#222222;fillColor=#CCCCCC;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" target="tJPKNJdwBcV0syQuOLNN-8" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=light-dark(#0080ff, #ededed);fontFamily=Manrope;fontColor=#000000;fillColor=#C0E2FF;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" value="I2C control clients (demultiplexer)" vertex="1">
+          <mxGeometry height="60" width="120" x="230" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=none;fontFamily=Manrope;fontColor=#000000;fillColor=#CCCCCC;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" value="Other Control server(s)" vertex="1">
+          <mxGeometry height="60" width="120" x="390" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#006EAF;fontFamily=Manrope;fontColor=#ffffff;fillColor=#1ba1e2;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" value="&lt;div&gt;DFU&lt;/div&gt;&lt;div&gt;(control server)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="389" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=none;fontFamily=Manrope;fontColor=#000000;fillColor=#B3EFCB;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" value="Flash library" vertex="1">
+          <mxGeometry height="60" width="120" x="630" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=none;fontFamily=Manrope;fontColor=#000000;fillColor=#CCCCCC;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" value="Other feature" vertex="1">
+          <mxGeometry height="30" width="120" x="791" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#006EAF;fontFamily=Manrope;fontColor=#ffffff;fillColor=#1ba1e2;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" value="&lt;div&gt;DFU&lt;/div&gt;state-machine" vertex="1">
+          <mxGeometry height="60" width="120" x="509" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#006EAF;fontFamily=Manrope;fontColor=#ffffff;fillColor=#1ba1e2;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" value="Module" vertex="1">
+          <mxGeometry height="30" width="120" x="791" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=light-dark(#0080ff, #ededed);fontFamily=Manrope;fontColor=#000000;fillColor=#C0E2FF;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" value="Thread" vertex="1">
+          <mxGeometry height="30" width="120" x="791" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=none;fontFamily=Manrope;fontColor=#000000;fillColor=#B3EFCB;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" value="Library" vertex="1">
+          <mxGeometry height="30" width="120" x="791" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="tJPKNJdwBcV0syQuOLNN-15" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Manrope;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DManrope%3Awght%40500%3B800;fontSize=14;" value="Legend" vertex="1">
+          <mxGeometry height="30" width="120" x="791" y="90" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

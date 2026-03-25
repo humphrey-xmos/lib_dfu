@@ -22,8 +22,9 @@
 #endif
 
 /** Main control for the USB functionality of the DFU library. 
- * When enabled, the DFU library will include USB support. Build with lib_xud or lib_xua.
+ * When enabled, the DFU library will include USB support.
  * When disabled, USB support will be excluded. Other transports can be used.
+ * \note Requires `lib_xud` or `lib_xua` to be added to `APP_DEPENDENT_MODULES` to use.
  */
 #ifndef DFU_USB_EN
 #define DFU_USB_EN 0
@@ -102,13 +103,17 @@
 /** Main control for the DFU lib_control_device server functionality.
  * When enabled, the DFU library will include the control server for non-USB transports.
  * When disabled, the control server will be excluded.
- * \note Requires lib_device_control to be added to `APP_DEPENDENT_MODULES` to use.
+ * \note Requires `lib_device_control` to be added to `APP_DEPENDENT_MODULES` to use.
  */
 #ifndef DFU_CONTROL_SERVER
 #define DFU_CONTROL_SERVER 0
 #endif
 
 /** \} */
+
+#if (DFU_USB_EN && DFU_CONTROL_SERVER)
+#error "DFU_CONTROL_SERVER should not be enabled when DFU_USB_EN is enabled, select only one of these options"
+#endif
 
 #if (DFU_TRANSFER_SIZE_BYTES > DFU_FLASH_PAGE_SIZE_BYTES)
 #error "DFU_TRANSFER_SIZE_BYTES must not be greater than DFU_FLASH_PAGE_SIZE_BYTES"

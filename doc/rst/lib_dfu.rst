@@ -34,6 +34,13 @@ To use this library in an application include ``lib_dfu`` in the application's `
    pinning to a release version and other options, please see the page
    `xcommon-cmake Dependency Management <https://www.xmos.com/documentation/XM-015090-PC/html/doc/dependency_management.html>`_.
 
+For flash memory support in an application, this library requires linking to the Tool's Quad Flash library ``quadflash`` in
+the application's ``APP_COMPILER_FLAGS`` list in `CMakeLists.txt`, for example:
+
+.. code-block:: cmake
+
+   set(APP_COMPILER_FLAGS  ... -lquadflash ...)
+
 All ``lib_dfu`` functions can be accessed via the ``dfu.h`` header file, for example:
 
 .. code-block:: C
@@ -102,7 +109,10 @@ For full details of all configuration options please see the `DFU Configuration 
      - Enable DFU functionality for device applications, disable for host applications.
      - ``1`` (Enabled)
    * - ``DFU_USB_EN``
-     - Enable USB transport layer for DFU. Disable for non-USB transports.
+     - Enable DFU over USB support. Disable for non-USB transports.
+     - ``0`` (Disabled)
+   * - ``DFU_CONTROL_SERVER``
+     - Enable (non-USB) DFU over ``lib_device_control`` support. Disable for USB transports.
      - ``0`` (Disabled)
    * - ``DFU_BCD_DEVICE``
      - Device release number in binary-coded decimal (BCD) format.
@@ -111,34 +121,48 @@ For full details of all configuration options please see the `DFU Configuration 
 DFU Resources
 =============
 
-The DFU implementation in ``lib_dfu`` uses a number of threads to perform the DFU process,
-which are outlined in :numref:`dfu_threads`.
+The DFU implementation in ``lib_dfu`` uses a number of threads to perform the DFU process.
 
 For USB transports, there is the USB ``lib_xud`` thread, which handles the USB communication and passes it to
-the ``endpoint0`` thread. The ``endpoint0`` thread receives the DFU commands from the host and sends them to the DFU task. Due to the
+the ``endpoint0`` thread, which are outlined in :numref:`dfu_threads_usb`.
+The ``endpoint0`` thread receives the DFU commands from the host and sends them to the DFU task. Due to the
 use of the ``i_dfu`` interface, the DFU task can be ``distributable`` and thus called directly from the ``endpoint0`` thread,
 so no additional threads are needed for the DFU task.
 
-For non-USB transports, there is a thread for the physical transport layer, a thread for the ``control`` client, and one thread for the 
-``control`` server with the DFU task. Three threads in total.
-
-.. figure:: ../images/DFU_Thread_Diagram.drawio.png
-   :width: 60%
+.. figure:: ../images/lib_dfu_threads_usb.png
+   :width: 80%
    :align: center
-   :name: dfu_threads
+   :name: dfu_threads_usb
 
-   DFU thread diagram for USB and non-USB transports
+   DFU thread diagram for USB transports
+
+For non-USB transports, there is a thread for the physical transport layer, a thread for the
+`lib_device_control <https://www.xmos.com/libraries/lib_device_control>`_ ``control`` client, and one thread for the 
+``control`` server with the DFU task, which are outlined in :numref:`dfu_threads_control`. Three threads in total.
+
+.. figure:: ../images/lib_dfu_threads_control.png
+   :width: 80%
+   :align: center
+   :name: dfu_threads_control
+
+   DFU thread diagram for non-USB transports
 
 Design Constraints
 ------------------
 
 The main constraint to be aware of when designing DFU functionality into an application is that
 the DFU task must be running on ``tile[0]``, as the flash memory is only accessible from tile 0.
+For details on working with flash memory on XCORE devices, please see
+`Design and manufacture systems with flash memory <https://www.xmos.com/documentation/XM-014363-PC/html/tools-guide/tutorials/design-with-flash/flash.html>`_.
 
 The physical transport can be on either tile as there is an interface to bridge the communications.
 
 The secondary constraint is the time taken to perform the DFU process, particularly the flash erase and write operations,
 which can take a a few minutes to complete with very large images (>512 kB).
+
+The timing of the DFU process can be managed by setting the appropriate response values for the DFU status requests
+managed through the configuration defines that start ``POLL_TIMEOUT_DNLOAD_``, see `DFU Configuration Options`_,
+to allow the host to know how long to wait before sending the next command. Many of these values can be taken from the flash memory data-sheet.
 
 DFU Lifecycle
 =============
@@ -196,7 +220,7 @@ XCORE Boot Process
 ------------------
 
 The DFU depends on the XCORE boot process, and the role of the flash loader to run the upgrade image when valid, for more details please see
-`Design and manufacture systems with flash memory <https://www.xmos.com/documentation/XM-014363-PC/html/tools-guide/tutorials/design-with-flash/flash.html>`_
+`Design and manufacture systems with flash memory <https://www.xmos.com/documentation/XM-014363-PC/html/tools-guide/tutorials/design-with-flash/flash.html>`_.
 
 Description
 -----------
@@ -217,16 +241,16 @@ Once the device is in DFU mode, the DFU interface can accept commands defined by
 
 After detaching the device, the host proceeds with the DFU download/upload commands to write/read the firmware upgrade image to/from the device.
 
-During the DFU download process, on receiving the first ``DFU_DNLOAD`` command (``wBlockNum`` is typically 0), the device starts to erase
+During the DFU download process, on receiving the first ``DFU_DNLOAD`` command, the device starts to erase
 ``FLASH_MAX_UPGRADE_SIZE`` bytes of the upgrade section of the flash, see :numref:`dfu_erase_seq_diag`. This is done by repeatedly calling the flash erase function until the entire upgrade section is erased,
 and can take several seconds. To avoid the ``DFU_DNLOAD`` request timing out, the flash erase is instead done in the ``DFU_GETSTATUS`` handling
-code for block 0. So for block 0, the device ends up returning the status as ``dfuDNBUSY`` several times while the flash
+code. So, the device ends up returning the status as ``dfuDNBUSY`` several times while the flash
 erase is in progress.
 
 .. uml:: ../images/dfu_erase.plantuml
    :caption: Message sequence chart for the DFU erase operation
    :align: center
-   :width: 60%
+   :width: 70%
    :name: dfu_erase_seq_diag
 
 :numref:`dfu_download_seq_diag` describes the DFU download process following the erase operation, where the device receives
@@ -283,22 +307,18 @@ Building the host applications
 
 This section assumes that the host compiler is installed and in the path, for details per host OS please see `Host dependencies`_.
 
-For Linux and Mac hosts, the host app can be built from a command terminal with the commands shown in :numref:`build_host_linux`.
+For Linux and Mac hosts, the host app can be built from a command terminal with the commands as shown:
 
 .. code-block:: console
-   :caption: Building the host app on Linux or Mac hosts
-   :name: build_host_linux
 
    cd lib_dfu/host
    cmake -G "Unix Makefiles" -B build
    xmake -j -C build
 
 For Windows hosts the process is the same except the Ninja generator is recommended to be used with CMake and the executable will have a ``.exe`` extension.
-The commands are shown in :numref:`build_host_windows`.
+The commands as shown:
 
 .. code-block:: console
-   :caption: Building the host app on Windows hosts
-   :name: build_host_windows
 
    cd lib_dfu/host
    cmake -G "Ninja" -B build
@@ -344,7 +364,7 @@ to write the suffix to flash after writing the firmware image.
 
 .. note:: The USB DFU specification requires a valid suffix to be present in the firmware image.
 
-.. note:: Before generating a suffixed binary file, the xe file will need to be processed.
+Before generating a suffixed binary file, the xe file will need to be processed using ``xflash``.
 
 .. code-block:: console
 
@@ -441,7 +461,7 @@ The example is `XCORE` to `XCORE` over I2C, so two `XCORE` boards are needed. Th
 
 Connect three jumper wires between the ``XK-EVK-XU316`` and the ``XK-VOICE-L71`` to allow the I2C communication between the host and device.
 
-For the ``XK-EVK-XU316``, connect the jumper wires as shown in the :numref:`board_xk_evk_xu316`, connecting the I2C `SCL`, `SDA` and `GND` pins to the corresponding pins on the ``XK-VOICE-L71``.
+For the ``XK-EVK-XU316``, connect the jumper wires as shown in the :numref:`board_xk_evk_xu316` and :numref:`example_hw_setup_2_xk`, connecting the I2C `SCL`, `SDA` and `GND` pins to the corresponding pins on the ``XK-VOICE-L71``.
 
 .. figure:: ../images/xk_evk_xu316-I2C.png
    :width: 60%
@@ -451,6 +471,12 @@ For the ``XK-EVK-XU316``, connect the jumper wires as shown in the :numref:`boar
 
 The ``XK-VOICE-L71`` uses the Raspberry Pi GPIO pins for I2C communication. For more information, refer to the
 `Raspberry Pi GPIO Documentation <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#gpio>`_.
+
+.. figure:: ../images/example_hw_setup_2_xk.jpg
+   :width: 60%
+   :name: example_hw_setup_2_xk
+
+   Connecting I2C between the XK-EVK-XU316 and XK-VOICE-L71
 
 To run the example, connect a USB cable to power the ``XK-VOICE-L71`` board as shown in :numref:`board_l71_hw_setup`,
 and plug the XTAG to the board and connect the XTAG USB cable to the development machine. And also connect two
