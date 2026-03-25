@@ -15,12 +15,6 @@
 #include "dfu_flash.h"
 #include "fifo.h"
 
-#define POLL_TIMEOUT_DNLOAD_ENTRY_MSEC 150
-#define POLL_TIMEOUT_DNLOAD_ERASE_MSEC 8
-#define POLL_TIMEOUT_DNLOAD_FIRST_WRITE_MSEC 100
-#define POLL_TIMEOUT_DNLOAD_WRITE_MSEC 2
-#define POLL_TIMEOUT_DNLOAD_MANIFEST_MSEC 3
-
 static enum dnload_sub_state sub_state = DNLOAD_SYNC;
 static uint32_t poll_timeout = 0;
 

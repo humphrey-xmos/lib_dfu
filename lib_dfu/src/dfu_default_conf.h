@@ -75,7 +75,8 @@
 #define NUM_TRANSFER_BLOCKS_PER_FLASH_PAGE (DFU_FLASH_PAGE_SIZE_BYTES / DFU_TRANSFER_SIZE_BYTES)
 #endif
 
-/** Whether to enable USB in-band functions for DFU
+/**
+ * Whether to enable USB in-band functions for DFU
  * Inband functions occur during the host request transaction.
  * Out-of-band requests are deferred until after the host request has been completed,
  * which require the DFU task to be allocated to a thread.
@@ -84,10 +85,10 @@
 #define DFU_CONFIG_USB_INBAND_FUNCTIONS 0
 #endif
 
-/** Defines flash area to erase on first DFU download request received
+/**
+ * Defines flash area to erase on first DFU download request received
  *
  * Flash library will round it up to the nearest sector, e.g. 4KB
- *
  */
 #ifndef FLASH_MAX_UPGRADE_SIZE
 #define FLASH_MAX_UPGRADE_SIZE (512 * 1024)
@@ -100,7 +101,63 @@
 #endif
 #endif
 
-/** Main control for the DFU lib_control_device server functionality.
+/**
+ * Poll timeout for DFU download entry in milliseconds, time taken to find the upgrade image, if it exists and erase the first sector.
+ * 
+ * The first sector erase can often take significantly longer than subsequent erases, as it may require additional setup such as checking whether an upgrade image exists and its size.
+ * 
+ * Values shorter than the actual time taken may cause the host to timeout or cause clock-stretching if using I2C.
+ */
+#ifndef POLL_TIMEOUT_DNLOAD_ENTRY_MSEC
+#define POLL_TIMEOUT_DNLOAD_ENTRY_MSEC 150
+#endif
+
+/**
+ * Poll timeout for DFU download erase in milliseconds, time taken to erase following sectors of the upgrade image, when it exists.
+ * 
+ * The value should be taken from the Flash memory datasheet, for erase operations.
+ * 
+ * Values shorter than the actual time taken may cause the host to timeout or cause clock-stretching if using I2C.
+ */
+#ifndef POLL_TIMEOUT_DNLOAD_ERASE_MSEC
+#define POLL_TIMEOUT_DNLOAD_ERASE_MSEC 8
+#endif
+
+/**
+ * Poll timeout for DFU download first page write in milliseconds, time taken to prepare for the write and write the first page of the upgrade image.
+ * 
+ * The first page can often take significantly longer to write than subsequent pages, as it may require additional setup such as preparing the flash for writing.
+ * 
+ * Values shorter than the actual time taken may cause the host to timeout or cause clock-stretching if using I2C.
+ */
+#ifndef POLL_TIMEOUT_DNLOAD_FIRST_WRITE_MSEC
+#define POLL_TIMEOUT_DNLOAD_FIRST_WRITE_MSEC 100
+#endif
+
+/**
+ * Poll timeout for DFU download write in milliseconds, time taken to write subsequent pages of the upgrade image.
+ * 
+ * The value should be taken from the Flash memory datasheet, for write operations.
+ * 
+ * Values shorter than the actual time taken may cause the host to timeout or cause clock-stretching if using I2C.
+ */
+#ifndef POLL_TIMEOUT_DNLOAD_WRITE_MSEC
+#define POLL_TIMEOUT_DNLOAD_WRITE_MSEC 2
+#endif
+
+/**
+ * Poll timeout for DFU manifest in milliseconds, time taken to write the last page and finalise the write process.
+ * 
+ * The value should be taken from the Flash memory datasheet, for write operations.
+ * 
+ * Values shorter than the actual time taken may cause the host to timeout or cause clock-stretching if using I2C.
+ */
+#ifndef POLL_TIMEOUT_DNLOAD_MANIFEST_MSEC
+#define POLL_TIMEOUT_DNLOAD_MANIFEST_MSEC 3
+#endif
+
+/**
+ * Main control for the DFU lib_control_device server functionality.
  * When enabled, the DFU library will include the control server for non-USB transports.
  * When disabled, the control server will be excluded.
  * \note Requires `lib_device_control` to be added to `APP_DEPENDENT_MODULES` to use.
