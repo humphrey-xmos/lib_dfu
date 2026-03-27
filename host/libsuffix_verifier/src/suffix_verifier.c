@@ -1,5 +1,8 @@
 // Copyright 2020-2026 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
+
+#include "suffix_verifier.h"
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <memory.h>
@@ -26,10 +29,10 @@ int verify_dfu_suffix(const unsigned char *file, size_t num_bytes,
                       unsigned short vendor_id,
                       unsigned short product_id,
                       unsigned short bcd_device,
-                      size_t *suffix_length, char msg[256])
+                      size_t *suffix_length, char msg[MSG_BUFFER_BYTES])
 {
   if (num_bytes < sizeof(struct dfu_suffix)) {
-    sprintf(msg, "file is too small (need at least suffix length %zu)\n",
+    snprintf(msg, MSG_BUFFER_BYTES, "file is too small (need at least suffix length %zu)\n",
                   sizeof(struct dfu_suffix));
     return 1;
   }
@@ -53,48 +56,48 @@ int verify_dfu_suffix(const unsigned char *file, size_t num_bytes,
   suffix.bcd_device = le16toh(suffix.bcd_device);
 
   if (suffix.crc != crc) {
-    sprintf(msg, "checksum mismatch: suffix 0x%08X computed 0x%08X\n",
+    snprintf(msg, MSG_BUFFER_BYTES, "checksum mismatch: suffix 0x%08X computed 0x%08X\n",
                   suffix.crc, crc);
     return 2;
   }
 
   if (suffix.suffix_length != sizeof(struct dfu_suffix)) {
-    sprintf(msg, "suffix length field: suffix 0x%02X should be 0x%02X\n",
+    snprintf(msg, MSG_BUFFER_BYTES, "suffix length field: suffix 0x%02X should be 0x%02X\n",
                   suffix.suffix_length, (int)sizeof(struct dfu_suffix));
     return 3;
   }
 
   const uint8_t signature[] = DFU_SIGNATURE;
   if (memcmp(suffix.signature, signature, sizeof(signature)) != 0) {
-    sprintf(msg, "signature field: is 0x%02X%02X%02X should be 0x%02X%02X%02X\n",
+    snprintf(msg, MSG_BUFFER_BYTES, "signature field: is 0x%02X%02X%02X should be 0x%02X%02X%02X\n",
                   suffix.signature[0], suffix.signature[1], suffix.signature[2],
                   signature[0], signature[1], signature[2]);
     return 4;
   }
 
   if (suffix.bcd_dfu != DFU_BCD) {
-    sprintf(msg, "bcdDFU field: suffix 0x%04X should be 0x%04X\n",
+    snprintf(msg, MSG_BUFFER_BYTES, "bcdDFU field: suffix 0x%04X should be 0x%04X\n",
                   suffix.bcd_dfu, DFU_BCD);
     return 5;
   }
 
   if (suffix.vendor_id != 0xFFFF && vendor_id != 0xFFFF &&
       suffix.vendor_id != vendor_id) {
-    sprintf(msg, "vendor ID mismatch: suffix 0x%04X expected 0x%04X\n",
+    snprintf(msg, MSG_BUFFER_BYTES, "vendor ID mismatch: suffix 0x%04X expected 0x%04X\n",
                   suffix.vendor_id, vendor_id);
     return 6;
   }
 
   if (suffix.product_id != 0xFFFF && product_id != 0xFFFF &&
       suffix.product_id != product_id) {
-    sprintf(msg, "product ID mismatch: suffix 0x%04X expected 0x%04X\n",
+    snprintf(msg, MSG_BUFFER_BYTES, "product ID mismatch: suffix 0x%04X expected 0x%04X\n",
                   suffix.product_id, product_id);
     return 7;
   }
 
   if (suffix.bcd_device != 0xFFFF && bcd_device != 0xFFFF &&
       suffix.bcd_device != bcd_device) {
-    sprintf(msg, "bcdDevice mismatch: suffix 0x%04X expected 0x%04X\n",
+    snprintf(msg, MSG_BUFFER_BYTES, "bcdDevice mismatch: suffix 0x%04X expected 0x%04X\n",
                   suffix.bcd_device, bcd_device);
     return 8;
   }

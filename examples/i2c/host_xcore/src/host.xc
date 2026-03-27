@@ -15,6 +15,7 @@
 #include "i2c.h"
 #include "control_host.h"
 #include "resource.h"
+#include "xassert.h"
 
 port p_scl = on tile[0]: XS1_PORT_1N; // Can be accessed via signal SCL_3V3, TP13
 port p_sda = on tile[0]: XS1_PORT_1O; // Can be accessed via signal SDA_3V3, TP14
@@ -36,6 +37,8 @@ int host_getState(client interface i2c_master_if i_i2c, uint8_t *state)
 
 int host_getStatus(client interface i2c_master_if i_i2c, uint8_t *status, uint8_t *nextState, unsigned int *timeout, uint8_t *strIndex)
 {
+  UNUSED(strIndex);
+
   uint8_t payload[GET_STATUS_LENGTH_BYTES];
   int ctrl = control_read_command(RESOURCE_ID_DFU, CONTROL_CMD_SET_READ(DFU_GETSTATUS), i_i2c, payload, GET_STATUS_LENGTH_BYTES);
   if (ctrl != CONTROL_SUCCESS) {

@@ -13,7 +13,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_LIST_DIR}/bin)
 add_executable(xmosdfu ${CMAKE_CURRENT_LIST_DIR}/src/xmosdfu.cpp)
 
 if (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-set(FLAGS /O2 /W4)
+set(FLAGS /O2 /W4 /D_CRT_SECURE_NO_WARNINGS)
 else()
 set(FLAGS 
             -g

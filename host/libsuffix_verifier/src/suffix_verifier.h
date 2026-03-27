@@ -5,10 +5,12 @@
 
 #include <stddef.h>
 
+#define MSG_BUFFER_BYTES 256
+
 int verify_dfu_suffix(const unsigned char *file, size_t num_bytes,
                       unsigned short vendor_id,
                       unsigned short product_id,
                       unsigned short bcd_device,
-                      size_t *suffix_length, char msg[256]);
+                      size_t *suffix_length, char msg[MSG_BUFFER_BYTES]);
 
 #endif
