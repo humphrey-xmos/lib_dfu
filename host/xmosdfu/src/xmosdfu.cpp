@@ -26,7 +26,7 @@ void Sleep(unsigned milliseconds) {
 
 #include "libusb.h"
 
-unsigned int XMOS_DFU_IF = 0;
+int XMOS_DFU_IF = 0;
 static int dfu_timeout = 5000; // 5s
 
 #define USB_BMREQ_H2D_CLASS_INT (LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE)
@@ -89,21 +89,20 @@ static int probe_configuration(libusb_device *dev, struct libusb_device_descript
             if (inter_desc->bInterfaceClass == 0xFE && inter_desc->bInterfaceSubClass == 0x1)
             {
                 XMOS_DFU_IF = inter_desc->bInterfaceNumber;
-                struct libusb_device_descriptor desc;
-                libusb_get_device_descriptor(dev, &desc);
+                libusb_get_device_descriptor(dev, desc);
 
                 if(inter_desc->bInterfaceProtocol == bInterfaceProtocol_RUNTIME)
                 {
-                    printf("Found Runtime: [%04x:%04x] ver=%04x\n", desc.idVendor, desc.idProduct, desc.bcdDevice);
+                    printf("Found Runtime: [%04x:%04x] ver=%04x\n", desc->idVendor, desc->idProduct, desc->bcdDevice);
                     if(!list)
                     {
-                        if((desc.idVendor != match_vendor) || (desc.idProduct != match_product))
+                        if((desc->idVendor != match_vendor) || (desc->idProduct != match_product))
                         {
                             continue;
                         }
                         else
                         {
-                            printf("Opening DFU capable USB device, [%04x:%04x], Runtime mode.\n", desc.idVendor, desc.idProduct);
+                            printf("Opening DFU capable USB device, [%04x:%04x], Runtime mode.\n", desc->idVendor, desc->idProduct);
                             device_bInterfaceProtocol = inter_desc->bInterfaceProtocol;
                             found_dfu_itf = 1;
                             break;
@@ -112,17 +111,17 @@ static int probe_configuration(libusb_device *dev, struct libusb_device_descript
                 }
                 else if(inter_desc->bInterfaceProtocol == bInterfaceProtocol_DFU)
                 {
-                    printf("Found DFU: [%04x:%04x] ver=%04x\n", desc.idVendor, desc.idProduct, desc.bcdDevice);
+                    printf("Found DFU: [%04x:%04x] ver=%04x\n", desc->idVendor, desc->idProduct, desc->bcdDevice);
                     if(!list)
                     {
-                        if((match_vendor_dfu >= 0 && desc.idVendor != match_vendor_dfu) ||
-                            (match_product_dfu >= 0 && desc.idProduct != match_product_dfu))
+                        if((match_vendor_dfu >= 0 && desc->idVendor != match_vendor_dfu) ||
+                            (match_product_dfu >= 0 && desc->idProduct != match_product_dfu))
                         {
                             continue;
                         }
                         else
                         {
-                            printf("Opening DFU capable USB device, [%04x:%04x], DFU mode.\n", desc.idVendor, desc.idProduct);
+                            printf("Opening DFU capable USB device, [%04x:%04x], DFU mode.\n", desc->idVendor, desc->idProduct);
                             device_bInterfaceProtocol = inter_desc->bInterfaceProtocol;
                             found_dfu_itf = 1;
                             break;
@@ -171,22 +170,22 @@ int xmos_dfu_revertfactory(void)
     return 0;
 }
 
-int dfu_detach(unsigned int interface, unsigned int timeout)
+int dfu_detach(int interface, unsigned int timeout)
 {
-    return libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_DETACH, timeout, interface, NULL, 0, dfu_timeout);
+    return libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_DETACH, (uint16_t)timeout, (uint16_t)interface, NULL, 0, (unsigned int)dfu_timeout);
 }
 
-int dfu_getState(unsigned int interface, unsigned char *state)
+int dfu_getState(int interface, unsigned char *state)
 {
-    libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATE, 0, interface, state, 1, 0);
+    libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATE, 0, (uint16_t)interface, state, 1, 0U);
     return 0;
 }
 
-int dfu_getStatus(unsigned int interface, unsigned char *state, unsigned int *timeout,
+int dfu_getStatus(int interface, unsigned char *state, unsigned int *timeout,
                   unsigned char *nextState, unsigned char *strIndex)
 {
     unsigned int data[2];
-    libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATUS, 0, interface, (unsigned char *)data, 6, 0);
+    libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATUS, 0, (uint16_t)interface, (unsigned char *)data, 6, 0U);
 
     *state = data[0] & 0xff;
     *timeout = (data[0] >> 8) & 0xffffff;
@@ -195,41 +194,40 @@ int dfu_getStatus(unsigned int interface, unsigned char *state, unsigned int *ti
     return 0;
 }
 
-int dfu_clrStatus(unsigned int interface)
+int dfu_clrStatus(int interface)
 {
-    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_CLRSTATUS, 0, interface, NULL, 0, 0);
+    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_CLRSTATUS, 0, (uint16_t)interface, NULL, 0, 0U);
     return 0;
 }
 
-int dfu_abort(unsigned int interface)
+int dfu_abort(int interface)
 {
-    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_ABORT, 0, interface, NULL, 0, 0);
+    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_ABORT, 0, (uint16_t)interface, NULL, 0, 0U);
     return 0;
 }
 
-unsigned int dfu_download(unsigned int interface, unsigned int block_num, unsigned int size, unsigned char *data)
+int dfu_download(int interface, unsigned int block_num, unsigned int size, unsigned char *data)
 {
     //printf("... Downloading block number %d size %d\r", block_num, size);
     /* Returns actual data size transferred */
-    unsigned int transfered = libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_DNLOAD, block_num, interface, data, size, 0);
+    int transfered = libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_DNLOAD, (uint16_t)block_num, (uint16_t)interface, data, (uint16_t)size, 0U);
     return transfered;
 }
 
-int dfu_upload(unsigned int interface, unsigned int block_num, unsigned int size, unsigned char*data)
+int dfu_upload(int interface, unsigned int block_num, unsigned int size, unsigned char*data)
 {
-    unsigned int numBytes = 0;
-    numBytes = libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_UPLOAD, block_num, interface, (unsigned char *)data, size, 0);
+    int numBytes = 0;
+    numBytes = libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_UPLOAD, (uint16_t)block_num, (uint16_t)interface, (unsigned char *)data, (uint16_t)size, 0U);
     return numBytes;
 }
 
 int write_dfu_image(char *file)
 {
-    unsigned int i = 0;
     FILE* inFile = NULL;
     int image_size = 0;
-    unsigned int num_blocks = 0;
-    unsigned int block_size = 64;
-    unsigned int remainder = 0;
+    int num_blocks = 0;
+    const int block_size = 64;
+    int remainder = 0;
     unsigned char block_data[256];
 
     unsigned char dfuState = 0;
@@ -281,11 +279,12 @@ int write_dfu_image(char *file)
 
     dfuBlockCount = 0;
 
-    for (i = 0; i < num_blocks; i++)
+    for (int i = 0; i < num_blocks; i++)
     {
         memset(block_data, 0x0, block_size);
-        fread(block_data, 1, block_size, inFile);
-        unsigned int transferred = dfu_download(0, dfuBlockCount, block_size, block_data);
+        // TODO - make use of return values
+        (void)fread(block_data, 1, block_size, inFile);
+        int transferred = dfu_download(0, dfuBlockCount, block_size, block_data);
         if(transferred != block_size)
         {
             /* Error */
@@ -312,7 +311,7 @@ int write_dfu_image(char *file)
     if (remainder)
     {
         memset(block_data, 0x0, block_size);
-        fread(block_data, 1, remainder, inFile);
+        (void)fread(block_data, 1, (size_t)remainder, inFile);
         dfu_download(0, dfuBlockCount, block_size, block_data);
         dfu_getStatus(0, &dfuState, &timeout, &nextDfuState, &strIndex);
     }
@@ -344,7 +343,7 @@ int read_dfu_image(char *file)
 
     while (1)
     {
-        unsigned int numBytes = 0;
+        int numBytes = 0;
         numBytes = dfu_upload(0, block_count, 64, block_data);
         /* Upload is completed when dfu_upload() returns an empty block */
         if (numBytes == 0)
@@ -403,8 +402,7 @@ static int parse_match_value(const char *str)
         print_pid_usage_and_exit();
     }
 	char *remainder;
-	int value;
-    value = strtoul(str, &remainder, 16);
+    int value = (int)strtoul(str, &remainder, 16);
     if (remainder == str) {
         fprintf(stderr, "Error converting %s string to integer\n", str);
         print_pid_usage_and_exit();
@@ -550,7 +548,7 @@ int main(int argc, char **argv)
         print_usage(program_name,  "Invalid option passed to dfu application");
     }
 
-    unsigned int pid = match_product;
+    int pid = match_product;
     if (pid == 0)
     {
         return -1;

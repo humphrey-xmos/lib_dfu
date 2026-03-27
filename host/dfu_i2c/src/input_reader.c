@@ -42,7 +42,7 @@ static size_t verify_suffix(const unsigned char *bytes, size_t num_bytes, struct
   int ret;
 
   ret = verify_dfu_suffix(bytes, num_bytes, device_id.vendor, device_id.product, device_id.bcddevice, &suffix_length, msg);
-  if (ret != 0) {
+  if (ret != SUFFIX_OK) {
     PRINT_ERROR("Failed DFU suffix verification (code %d): %s\n", ret, msg);
     return 0;
   }

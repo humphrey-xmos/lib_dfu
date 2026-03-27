@@ -24,15 +24,13 @@ else()
 endif()
 
 include(${_LIB_DEVICE_CONTROL_ROOT}/host/host_build_i2c.cmake)
-
-add_compile_definitions(_GNU_SOURCE HOST_APP)
+include(../libsuffix_verifier/libsuffix_verifier.cmake)
 
 set (INCLUDE_DIRS
         "../api"
         "../common"
         "../../lib_dfu/api"
         "../../lib_dfu/src"
-        "../libsuffix_verifier/src"
         "src"
 )
 
@@ -43,21 +41,19 @@ set (SOURCE_FILES
         src/operations.c
         ../common/dfu_utils.c
         src/labels.c
-        ../libsuffix_verifier/src/crc.c
-        ../libsuffix_verifier/src/suffix_verifier.c
 )
 
-set (DFUCTRL_LIB dfuctrl_i2c_1.0)
-set (DFUCTRL_APP dfu_i2c)
+set(DFUCTRL_LIB dfuctrl_i2c_1.0)
+set(DFUCTRL_APP dfu_i2c)
 add_compile_definitions(nologo CONTROL_USE_I2C CONTROL_RPI)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin)
 
-if (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-set(FLAGS /O2 /W4)
+if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+    set(FLAGS /O2 /W4)
 else()
-set(FLAGS 
+    set(FLAGS 
             -g
             -O2
             -Wall
@@ -73,12 +69,14 @@ endif()
 add_library(${DFUCTRL_LIB} STATIC ${SOURCE_FILES})
 target_include_directories(${DFUCTRL_LIB} PUBLIC ${INCLUDE_DIRS})
 target_compile_options(${DFUCTRL_LIB} PUBLIC ${FLAGS})
-target_link_libraries(${DFUCTRL_LIB} control_i2c_host)
+# TODO - make linking with INTERFACE libs PRIVATE
+target_link_libraries(${DFUCTRL_LIB} PUBLIC suffix_verifier control_i2c_host)
 
 add_executable(${DFUCTRL_APP} src/main.c)
 target_compile_options(${DFUCTRL_APP} PUBLIC ${FLAGS})
+
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    target_link_libraries(${DFUCTRL_APP} ${DFUCTRL_LIB})
+    target_link_libraries(${DFUCTRL_APP} PUBLIC ${DFUCTRL_LIB})
 else()
-    target_link_libraries(${DFUCTRL_APP} ${DFUCTRL_LIB} m)
+    target_link_libraries(${DFUCTRL_APP} PUBLIC ${DFUCTRL_LIB} m)
 endif()

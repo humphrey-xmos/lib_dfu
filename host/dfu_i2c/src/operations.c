@@ -81,7 +81,7 @@ static int check_status(struct dfu_getstatus *getstatus)
   // convert from hard little endian order after deserialization
   getstatus->state = payload[DFU_GETSTATUS_STATE_INDEX];
   getstatus->status = payload[DFU_GETSTATUS_STATUS_INDEX];
-  getstatus->poll_timeout_msec = payload[DFU_GETSTATUS_POLL_TIMEOUT_INDEX] | (payload[DFU_GETSTATUS_POLL_TIMEOUT_INDEX + 1] << 8) | (payload[DFU_GETSTATUS_POLL_TIMEOUT_INDEX + 2] << 16);
+  getstatus->poll_timeout_msec = (unsigned int)(payload[DFU_GETSTATUS_POLL_TIMEOUT_INDEX] | (payload[DFU_GETSTATUS_POLL_TIMEOUT_INDEX + 1] << 8) | (payload[DFU_GETSTATUS_POLL_TIMEOUT_INDEX + 2] << 16));
 
   if (getstatus->status != DFU_OK) {
     PRINT_ERROR("Status was %s when %s expected\n", status_str(getstatus->status), status_str(DFU_OK));
