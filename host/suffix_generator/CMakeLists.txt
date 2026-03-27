@@ -4,8 +4,6 @@ project("suffix_generator")
 # Force release mode so that all the DLLs are statically linked
 set (CMAKE_BUILD_TYPE "Release" CACHE STRING "Only Release mode is allowed" FORCE)
 
-set (DEFINES _GNU_SOURCE HOST_APP)
-
 set (INCLUDE_DIRS 
         "../api"
 )

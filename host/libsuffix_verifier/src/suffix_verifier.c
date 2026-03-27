@@ -34,7 +34,7 @@ int verify_dfu_suffix(const unsigned char *file, size_t num_bytes,
   if (num_bytes < sizeof(struct dfu_suffix)) {
     snprintf(msg, MSG_BUFFER_BYTES, "file is too small (need at least suffix length %zu)\n",
                   sizeof(struct dfu_suffix));
-    return 1;
+    return SUFFIX_TOO_SMALL;
   }
 
   struct dfu_suffix suffix;
@@ -58,13 +58,13 @@ int verify_dfu_suffix(const unsigned char *file, size_t num_bytes,
   if (suffix.crc != crc) {
     snprintf(msg, MSG_BUFFER_BYTES, "checksum mismatch: suffix 0x%08X computed 0x%08X\n",
                   suffix.crc, crc);
-    return 2;
+    return SUFFIX_CHECKSUM_MISMATCH;
   }
 
   if (suffix.suffix_length != sizeof(struct dfu_suffix)) {
     snprintf(msg, MSG_BUFFER_BYTES, "suffix length field: suffix 0x%02X should be 0x%02X\n",
                   suffix.suffix_length, (int)sizeof(struct dfu_suffix));
-    return 3;
+    return SUFFIX_LENGTH_FIELD_MISMATCH;
   }
 
   const uint8_t signature[] = DFU_SIGNATURE;
@@ -72,36 +72,36 @@ int verify_dfu_suffix(const unsigned char *file, size_t num_bytes,
     snprintf(msg, MSG_BUFFER_BYTES, "signature field: is 0x%02X%02X%02X should be 0x%02X%02X%02X\n",
                   suffix.signature[0], suffix.signature[1], suffix.signature[2],
                   signature[0], signature[1], signature[2]);
-    return 4;
+    return SUFFIX_SIGNATURE_MISMATCH;
   }
 
   if (suffix.bcd_dfu != DFU_BCD) {
     snprintf(msg, MSG_BUFFER_BYTES, "bcdDFU field: suffix 0x%04X should be 0x%04X\n",
                   suffix.bcd_dfu, DFU_BCD);
-    return 5;
+    return SUFFIX_BCD_DFU_MISMATCH;
   }
 
   if (suffix.vendor_id != 0xFFFF && vendor_id != 0xFFFF &&
       suffix.vendor_id != vendor_id) {
     snprintf(msg, MSG_BUFFER_BYTES, "vendor ID mismatch: suffix 0x%04X expected 0x%04X\n",
                   suffix.vendor_id, vendor_id);
-    return 6;
+    return SUFFIX_VENDOR_ID_MISMATCH;
   }
 
   if (suffix.product_id != 0xFFFF && product_id != 0xFFFF &&
       suffix.product_id != product_id) {
     snprintf(msg, MSG_BUFFER_BYTES, "product ID mismatch: suffix 0x%04X expected 0x%04X\n",
                   suffix.product_id, product_id);
-    return 7;
+    return SUFFIX_PRODUCT_ID_MISMATCH;
   }
 
   if (suffix.bcd_device != 0xFFFF && bcd_device != 0xFFFF &&
       suffix.bcd_device != bcd_device) {
     snprintf(msg, MSG_BUFFER_BYTES, "bcdDevice mismatch: suffix 0x%04X expected 0x%04X\n",
                   suffix.bcd_device, bcd_device);
-    return 8;
+    return SUFFIX_BCD_DEVICE_MISMATCH;
   }
 
   *suffix_length = sizeof(struct dfu_suffix);
-  return 0;
+  return SUFFIX_OK;
 }

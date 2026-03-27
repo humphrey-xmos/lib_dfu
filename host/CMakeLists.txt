@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.16) # Note older version to support Buster
 
 project(host)
 
-add_subdirectory(libsuffix_verifier)
 add_subdirectory(suffix_generator)
 add_subdirectory(xmosdfu)
 

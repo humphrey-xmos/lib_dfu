@@ -7,8 +7,6 @@ set (CMAKE_BUILD_TYPE "Release" CACHE STRING "Only Release mode is allowed" FORC
 
 include(../../../../lib_device_control/host/host_build_i2c.cmake)
 
-add_compile_definitions(_GNU_SOURCE HOST_APP)
-
 set (INCLUDE_DIRS 
         "../../../host/api"
         "../../../host/dfu_i2c/src"

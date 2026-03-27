@@ -127,7 +127,6 @@ pipeline {
                                         sh "cmake --build build"
                                         sh "mkdir -p linux-x86_64"
                                         sh "cp suffix_generator/bin/dfu_suffix_generator linux-x86_64"
-                                        sh "cp libsuffix_verifier/lib/libsuffix_verifier.a linux-x86_64"
                                         sh "cp xmosdfu/bin/xmosdfu linux-x86_64"
                                     }
                                     archiveArtifacts artifacts: "host/linux-x86_64/*", fingerprint: true
@@ -188,7 +187,6 @@ pipeline {
                                 sh "cmake --build build"
                                 sh "mkdir -p macos-x86_64"
                                 sh "cp suffix_generator/bin/dfu_suffix_generator macos-x86_64"
-                                sh "cp libsuffix_verifier/lib/libsuffix_verifier.a macos-x86_64"
                                 sh "cp xmosdfu/bin/xmosdfu macos-x86_64"
 
                             }
@@ -217,7 +215,6 @@ pipeline {
                                 sh "cmake --build build"
                                 sh "mkdir -p macos-arm64"
                                 sh "cp suffix_generator/bin/dfu_suffix_generator macos-arm64"
-                                sh "cp libsuffix_verifier/lib/libsuffix_verifier.a macos-arm64"
                                 sh "cp xmosdfu/bin/xmosdfu macos-arm64"
 
                             }
@@ -245,7 +242,8 @@ pipeline {
                                 sh "cmake --build build"
                                 sh "mkdir -p RPi-64"
                                 sh "cp suffix_generator/bin/dfu_suffix_generator RPi-64"
-                                sh "cp libsuffix_verifier/lib/libsuffix_verifier.a RPi-64"
+                                sh "cp dfu_i2c/lib/libdfuctrl_i2c_1.0.a RPi-64"
+                                sh "cp dfu_i2c/bin/dfu_i2c RPi-64"
                                 sh "cp xmosdfu/bin/xmosdfu RPi-64"
 
                             }
@@ -274,7 +272,6 @@ pipeline {
                                     bat "cmake --build build"
                                     sh "mkdir -p windows-x64"
                                     bat "copy /Y suffix_generator\\bin\\dfu_suffix_generator.exe windows-x64"
-                                    bat "copy /Y libsuffix_verifier\\lib\\suffix_verifier.lib windows-x64"
                                     bat "copy /Y xmosdfu\\bin\\xmosdfu.exe windows-x64"
                                 }
                                 archiveArtifacts artifacts: "host/windows-x64/*", fingerprint: true

@@ -7,10 +7,11 @@ set (CMAKE_BUILD_TYPE "Release" CACHE STRING "Only Release mode is allowed" FORC
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_LIST_DIR}/bin)
 
-set(SUFFIX_VERIFIER ../../../../host/libsuffix_verifier)
+if(NOT TARGET suffix_verifier)
+    include(../../../../host/libsuffix_verifier/libsuffix_verifier.cmake)
+endif()
 
-add_executable(error_conditions error_conditions.c ${SUFFIX_VERIFIER}/src/crc.c)
-target_include_directories(error_conditions PRIVATE ${SUFFIX_VERIFIER}/src)
+add_executable(error_conditions error_conditions.c)
 
 if (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(error_conditions PRIVATE /O2 /W4)
@@ -24,4 +25,3 @@ else()
 endif()
 
 target_link_libraries(error_conditions PRIVATE suffix_verifier)
-target_link_directories(error_conditions PRIVATE ${SUFFIX_VERIFIER}/lib)
