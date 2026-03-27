@@ -1,6 +1,6 @@
 set(LIB_NAME lib_dfu)
 
-set(LIB_VERSION 1.1.0)
+set(LIB_VERSION 2.0.0)
 
 # Disable data partition dependency for DFU library, for now
 option(NO_DATA_PARTITION "Disable data partition dependency for DFU library" ON)

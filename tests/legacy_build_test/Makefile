@@ -9,7 +9,7 @@ XCC_FLAGS  = -O3 -mno-dual-issue -g -report -DDFU_BCD_DEVICE=0x0101 ../config.xs
 XCC_MAP_FLAGS = -lquadflash
 
 
-USED_MODULES = lib_dfu lib_i2c(>=6.4.1) lib_device_control
+USED_MODULES = lib_dfu lib_i2c(>=6.4.1) lib_device_control(>=5.0.1)
 
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure
