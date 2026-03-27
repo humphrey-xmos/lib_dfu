@@ -99,7 +99,7 @@ For full details of all configuration options please see the `DFU Configuration 
 
 .. list-table:: DFU defines
    :header-rows: 1
-   :widths: 25 45 20
+   :widths: 30 40 30
    :name: opt_dfu
 
    * - Define
