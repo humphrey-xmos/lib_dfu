@@ -20,10 +20,12 @@ enum dfu_api_status {
   DFU_API_BAD_PARAM = 3
 };
 
+/** DFU request response structure return type
+ */
 struct dfu_cmd_response {
-  enum dfu_api_status status;
-  int32_t return_data_len;
-  enum dfu_cmd_request deferred_request;
+  enum dfu_api_status status; /**< The status of the DFU request */
+  int32_t return_data_len; /**< The length of the data returned by the DFU request, only used for read operations. */
+  enum dfu_cmd_request deferred_request; /**< The deferred DFU request, if any, used to action slow operations. */
 };
 
 /* From USB DFU spec v1.1 
@@ -39,18 +41,26 @@ struct dfu_cmd_response {
  * DFU_ABORT      Zero      Interface Zero      None
  */
 
+/**
+ * \defgroup lib_dfu_api API
+ * \{
+ */
+
  /**
   * DFU request handling with arguments
   * 
   * \param request the DFU request to handle
-  * \param write_block pointer to the data payload of the request for write operations, usage depends on command, for download it's
-  * the data block to write, for other commands it's unused and can be null
-  * \param read_block pointer to the data payload buffer for read operations, usage depends on command, for upload it's the buffer
-  * to fill with the data block to upload, for other commands it's unused and can be null
+  * \param block pointer to the data payload of the request for read/write operations,
+  * usage depends on command, for download it's the data block to write,
+  * for upload it's the buffer to fill with the data block read from flash,
+  * for other commands it's unused and can be null
   * \param block_size_bytes the size of the data block to read/write for upload/download commands, for other commands it's unused and can be 0
   * \param block_num for download command, the block number to write, for other commands it's unused and can be null
   * 
-  * \return struct dfu_cmd_response containing status and any return value, usage depends on command, for upload the return_data_len is the size of the block to upload, for other commands it's unused and can be 0
+  * \return struct dfu_cmd_response containing status and any return value, usage depends on command,
+  * for upload the return_data_len is the size of the block to upload, for other commands it's unused and can be 0,
+  * the deferred_request field is used to indicate any slow operations to carry out after responding to the request,
+  * such as flash programming and rebooting, which cannot be completed within the time constraints of a single request/response transaction.
   * \retval DFU_API_SUCCESS if command was handled successfully, the value is the upload block-number for upload command, 0 otherwise.
   * \retval DFU_API_ERROR if there was an error handling the command
   * \retval DFU_API_BAD_PARAM if the command or parameters were invalid
@@ -65,7 +75,7 @@ struct dfu_cmd_response dfu_request_with_arguments(enum dfu_cmd_request request,
  * 
  * \param request the DFU request to send
  * 
- * \return struct dfu_cmd_response containing status
+ * \return struct dfu_cmd_response identical to dfu_request_with_arguments return value.
  * \retval DFU_API_SUCCESS for status, if command was handled successfully
  * \retval DFU_API_ERROR for status, if there was an error handling the command
  * \retval DFU_API_BAD_PARAM for status, if the command or parameters were invalid
@@ -73,11 +83,9 @@ struct dfu_cmd_response dfu_request_with_arguments(enum dfu_cmd_request request,
  */
 struct dfu_cmd_response dfu_request(enum dfu_cmd_request request);
 
-/**
- * \defgroup lib_dfu_api API
- * \{
- */
+/** \} */
 
+/* The following functions are deprecated */
 /**
  * DFU DETACH request
  */
@@ -106,7 +114,5 @@ void dfu_bus_reset(void);
  * for specification compliance (like the bus reset).
  */
 void dfu_timeout_detach(void);
-
-/** \} */
 
 #endif

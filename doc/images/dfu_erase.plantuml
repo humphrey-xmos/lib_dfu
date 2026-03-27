@@ -1,0 +1,28 @@
+@startuml
+
+!include puml-theme-xmos.puml
+
+participant Host as H
+participant Device as D
+
+H -> D : DFU_DNLOAD (BlockNum=0, Size>0)
+D -> D : Store block 0 data.
+
+loop Stored data size < flash page size
+    H -> D : DFU_DNLOAD (BlockNum=n, Size>0)
+    H -> D : DFU_GETSTATUS
+    D --> H : State=dfuDNLOAD-IDLE
+end
+
+loop until flash erase is complete
+    H -> D : DFU_GETSTATUS
+    alt Flash erase not complete
+        D --> H : State=dfuDNBUSY
+        D -> D : Deferred flash erase for a fixed period
+    else Flash erase complete
+        D -> D : Write page 0 to flash
+        D --> H : State=dfuDNLOAD-IDLE
+    end
+end
+
+@enduml

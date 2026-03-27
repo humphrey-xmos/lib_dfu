@@ -1,0 +1,38 @@
+@startuml
+
+!include puml-theme-xmos.puml
+
+participant Host as H
+participant Device as D
+
+loop until image is complete: n from 1 to N-1
+    H -> D : DFU_DNLOAD (BlockNum=n, Size>0)
+    D -> D : Store block n data.
+    H -> D : DFU_GETSTATUS
+    alt Stored data size < flash page size
+        D --> H : State=dfuDNLOAD-IDLE
+    else Flash page write
+        D --> H : State=dfuDNBUSY
+        D -> D : Deferred write page n to flash
+        H -> D : DFU_GETSTATUS
+        D --> H : State=dfuDNLOAD-IDLE
+    end
+end
+
+H -> D : DFU_DNLOAD (BlockNum=N, Size=0)
+D --> H : State=dfuMANIFEST-SYNC
+
+loop until image is write complete
+    H -> D : DFU_GETSTATUS
+    alt Write remaining page(s)
+        D --> H : State=dfuMANIFEST
+        D -> D : Deferred write page n to flash
+    else Write complete
+        D --> H : State=dfuDNLOAD-IDLE
+    end
+end
+
+H -> D : bus-reset (or DETACH)
+D -> D : Boot in runtime mode\nfrom the upgrade image
+
+@enduml

@@ -1,8 +1,8 @@
 :orphan:
 
-#############################################
-lib_dfu: Device Firmware Update (DFU) Library
-#############################################
+##############################################
+lib_dfu: Device Firmware Upgrade (DFU) Library
+##############################################
 
 :vendor: XMOS
 :version: 1.1.0
@@ -16,7 +16,7 @@ lib_dfu: Device Firmware Update (DFU) Library
 Summary
 *******
 
-The Device Firmware Update (DFU) library provides functionality to
+The Device Firmware Upgrade (DFU) library provides functionality to
 facilitate firmware updates over almost any transport physical layer. It includes
 support for handling DFU packets, managing firmware images, and ensuring
 the integrity of the update process.
@@ -36,6 +36,9 @@ Known issues
 
 - USB example reports several warnings such as "port "XS1_PORT_1F" on tile[0] is not connected to any pins in this package.",
   this is normal on small packages that do not have all the pins brought out.
+- The ``lib_device_control`` client handling currently consumes an additional thread as it is not distributable.
+- For DFU over I2C the bus speed of up to 100kbps is supported. This is also supported with no clock stretching for all commands except ``upload``.
+- For DFU over I2C, when exiting from DFU mode, the device reboots which interrupts the host communications, the host reports an error, but this does not affect the result.
 
 ****************
 Development repo
@@ -55,7 +58,6 @@ Required libraries (dependencies)
 
 * `lib_logging <https://www.xmos.com/libraries/lib_logging>`_ (https://www.xmos.com/libraries/lib_logging)
 * `lib_xassert <https://www.xmos.com/libraries/lib_xassert>`_ (https://www.xmos.com/libraries/lib_xassert)
-* `lib_flash_data_partition <https://www.xmos.com/libraries/lib_flash_data_partition>`_ (https://www.xmos.com/libraries/lib_flash_data_partition)
 
 *************************
 Related application notes

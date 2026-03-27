@@ -65,7 +65,7 @@ int host_request(client interface i2c_master_if i_i2c, enum dfu_cmd_request requ
   uint8_t payload[4] = { 0 };
   int ctrl = control_write_command(RESOURCE_ID_DFU, CONTROL_CMD_SET_WRITE(request), i_i2c, payload, 4);
   if (ctrl != CONTROL_SUCCESS) {
-    printf("control write detach command failed with %d\n", ctrl);
+    printf("control write command %d failed with %d\n", request, ctrl);
     return 1;
   }
   return 0;
@@ -98,7 +98,7 @@ int main(void)
         printf("version expected 0x%X, received 0x%X\n", CONTROL_VERSION, version);
       }
 
-      printf("started\n");
+      printf("Starting Control DFU example\n");
 
       /* DFU endpoint access */
       host_getState(i_i2c[0], &payload[0]);
@@ -131,6 +131,7 @@ int main(void)
       host_getStatus(i_i2c[0], &status, &state, &timeout, NULL);
       printf("DFU status: %d, timeout: %d ms, next state: %d\n", status, timeout, state);
 
+      printf("Starting Control data example\n");
       /* Data endpoint exchange */
       for (i = 0; i < 4; i++) {
         payload[0] = i;
