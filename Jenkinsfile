@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.43.3') _
+@Library('xmos_jenkins_shared_library@v0.49.0') _
 
 getApproval()
 
@@ -19,7 +19,7 @@ pipeline {
         )
         string(
             name: 'INFR_APPS_VERSION',
-            defaultValue: 'v3.2.1',
+            defaultValue: 'v3.4.0',
             description: 'The infr_apps version'
         )
         choice(
