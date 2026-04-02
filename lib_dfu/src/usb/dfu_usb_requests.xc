@@ -155,6 +155,12 @@ int DFUProcessResetState(client interface i_dfu i)
             DFUSetModeInactive();
         }
     }
+    // TODO , can we move this up...
+    if (result.deferred_request == DFU_DEFERRED_ACTION_REBOOT)
+    {
+        DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * XS1_TIMER_KHZ);
+        device_reboot();
+    }
 
     return inDFU;
 }
@@ -193,7 +199,7 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
     /* Check if the request was handled */
     if(result.status == DFU_API_SUCCESS)
     {
-        if (sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_D2H && sp.wLength != 0)
+        if ((sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_D2H) && (sp.wLength != 0))
         {
             returnVal = XUD_DoGetRequest(ep0_out, ep0_in, (data_buffer, unsigned char[]), result.return_data_len, result.return_data_len);
         }
@@ -203,9 +209,14 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
         }
 
   	    // If device reset requested, handle after command acknowledgement
-  	    if ((result.deferred_request == DFU_DEFERRED_ACTION_REBOOT_TO_DFU) || (result.deferred_request == DFU_DEFERRED_ACTION_REBOOT))
+  	    if (result.deferred_request == DFU_DEFERRED_ACTION_REBOOT_TO_DFU)
   	    {
             DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * XS1_TIMER_KHZ);
+            device_reboot();
+        }
+        else if (result.deferred_request == DFU_DEFERRED_ACTION_REBOOT)
+        {
+            DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * XS1_TIMER_KHZ);
             device_reboot();
         }
     } else {

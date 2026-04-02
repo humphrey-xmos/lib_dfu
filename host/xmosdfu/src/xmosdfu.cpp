@@ -175,6 +175,11 @@ int dfu_detach(int interface, unsigned int timeout)
     return libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_DETACH, (uint16_t)timeout, (uint16_t)interface, NULL, 0, (unsigned int)dfu_timeout);
 }
 
+int dfu_reset()
+{
+    return libusb_reset_device(devh);
+}
+
 int dfu_getState(int interface, unsigned char *state)
 {
     libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATE, 0, (uint16_t)interface, state, 1, 0U);
@@ -649,6 +654,11 @@ int main(int argc, char **argv)
         if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
         {
             fprintf(stderr, "error detaching\n");
+            return -1;
+        }
+        if (dfu_reset() < 0)
+        {
+            fprintf(stderr, "error resetting\n");
             return -1;
         }
     }

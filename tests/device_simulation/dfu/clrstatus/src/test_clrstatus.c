@@ -26,8 +26,8 @@ void test_clrstatus(void)
   TEST_ASSERT_EQUAL(DFU_API_SUCCESS, response.status);
   get_state_and_check(STATE_DFU_IDLE);
 
-  // another detach is unexpected here
-  response = dfu_request(DFU_DETACH);
+  // zero length download is unexpected in this state, should cause error
+  response = dfu_request_with_arguments(DFU_DNLOAD, payload, 0, NULL);
   TEST_ASSERT_EQUAL(DFU_API_ERROR, response.status);
   get_state_and_check(STATE_DFU_ERROR);
 

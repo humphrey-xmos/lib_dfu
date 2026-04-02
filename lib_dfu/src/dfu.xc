@@ -168,8 +168,6 @@ static struct dfu_cmd_response state_app_idle(enum dfu_cmd_request request) {
   struct dfu_cmd_response response = { DFU_API_BAD_PARAM, 0, 0 };
   if (request == XMOS_DFU_BUS_RESET) {
     response.status = DFU_API_SUCCESS;
-    // TODO - USB DFU mode enable when "value" is set.
-    // response = normal_transition(STATE_DFU_IDLE);
 
   } else if (request == DFU_DETACH) {
     response = normal_transition(STATE_APP_DETACH);
@@ -192,7 +190,7 @@ static struct dfu_cmd_response state_detach(enum dfu_cmd_request request) {
     response.deferred_request = DFU_DEFERRED_ACTION_FLASH_CONNECT;
 #endif
 
-  } else if (request != DFU_GETSTATUS && request != DFU_GETSTATE) {
+  } else if ((request != DFU_GETSTATUS) && (request != DFU_GETSTATE)) {
     // no other requests expected, return to appIDLE, but respond with STALL.
     response = normal_transition(STATE_APP_IDLE);
     response.status = DFU_API_ERROR;
@@ -293,10 +291,15 @@ static struct dfu_cmd_response state_dfu_idle(enum dfu_cmd_request request) {
     response.deferred_request = DFU_DEFERRED_ACTION_REVERT_FACTORY;
     response.status = DFU_API_SUCCESS;
     
+  } else if (request == DFU_DETACH) {
+    /* Handle detach as exit from DFUidle for Windows */
+    response = normal_transition(STATE_APP_IDLE);
+    response.deferred_request = DFU_DEFERRED_ACTION_REBOOT;
+
   } else if (request == DFU_ABORT) {
     response.status = DFU_API_SUCCESS;
 
-  } else if (request != DFU_GETSTATUS && request != DFU_GETSTATE && request != XMOS_DFU_BUS_RESET) {
+  } else if ((request != DFU_GETSTATUS) && (request != DFU_GETSTATE) && (request != XMOS_DFU_BUS_RESET)) {
     // no other requests expected, defined as error
     response = error_condition(DFU_errSTALLED_PKT, request);
   }
@@ -524,6 +527,11 @@ struct dfu_cmd_response dfu_request_with_arguments(enum dfu_cmd_request request,
         sub_sm_clear();
       }
       break;
+
+    // TODO
+    // default:
+    //   response = error_condition(DFU_errUNKNOWN, 0);
+    //   break;
   }
 
   /* Handle common requests last */
@@ -538,19 +546,16 @@ struct dfu_cmd_response dfu_request_with_arguments(enum dfu_cmd_request request,
 
   } else if ((request == XMOS_DFU_BUS_RESET) && (response.status != DFU_API_SUCCESS)) {
     // if bus reset was not handled by state machine handlers, handle it here by resetting to app idle.
+    // The expectation is that STATE_APP_IDLE and STATE_APP_DETACH will handle bus reset.
     if (state != STATE_APP_IDLE) {
       /* Exit from DFU mode. Send reboot command */
       flash_deinit();
-      timer tmr;
-      unsigned now;
-      tmr :> now;
-      debug_printf("Rebooting out of DFU mode\n");
-      tmr when timerafter(now + (DELAY_BEFORE_REBOOT_FROM_DFU_MS * XS1_TIMER_KHZ)) :> void;
-      // TODO - should this be deferred?
-      device_reboot();
-      // Note: testing will fall through to app idle without reboot, which is fine.
+      response = normal_transition(STATE_APP_IDLE);
+      response.deferred_request = DFU_DEFERRED_ACTION_REBOOT;
+
+    } else {
+      response = normal_transition(STATE_APP_IDLE);
     }
-    response = normal_transition(STATE_APP_IDLE);
 
   } else {
     /* For other requests, delegate to state machine handlers */
