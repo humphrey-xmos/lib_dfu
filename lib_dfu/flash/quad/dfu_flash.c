@@ -3,7 +3,12 @@
 
 #include "dfu_flash.h"
 
+#if (DFU_QUAD_SPI_FLASH)
 #include <quadflashlib.h>
+#else
+#include <flashlib.h>
+#endif
+
 #include <stdint.h>
 
 #include "dfu.h"

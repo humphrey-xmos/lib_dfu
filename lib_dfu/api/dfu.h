@@ -5,7 +5,6 @@
 #define DFU_H
 
 #include <stddef.h>
-#include <quadflash.h>
 #include <stdint.h>
 #include <xccompat.h>
 
