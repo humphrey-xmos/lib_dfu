@@ -16,6 +16,7 @@ set(LIB_C_SRCS              src/dfu_flashlib_user.c
 
 set(LIB_XC_SRCS             src/dfu.xc
                             src/usb/dfu_usb_requests.xc
+                            src/usb/dfu_usb_server.xc
                             src/dfu_reboot.xc
                             src/dfu_sub_sm.xc
                             src/control/dfu_control_server.xc)
