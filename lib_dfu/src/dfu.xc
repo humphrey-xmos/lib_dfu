@@ -557,6 +557,11 @@ struct dfu_cmd_response dfu_request_with_arguments(enum dfu_cmd_request request,
       response = normal_transition(STATE_APP_IDLE);
     }
 
+  } else if ((request == DFU_DETACH) && (state == STATE_DFU_ERROR)) {
+    // If otherwise unhandled...
+    response = normal_transition(STATE_APP_IDLE);
+    response.deferred_request = DFU_DEFERRED_ACTION_REBOOT;
+
   } else {
     /* For other requests, delegate to state machine handlers */
   }

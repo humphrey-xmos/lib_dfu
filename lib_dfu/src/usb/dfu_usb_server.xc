@@ -30,6 +30,7 @@ void dfu_usb_server(server interface i_dfu i)
                 //     break;
                 // }
 
+                // TODO - do we pass value "inDFU" into state machine to tidy this up?
                 // If we are booting into DFU mode...
                 if ((request.request == XMOS_DFU_BUS_RESET) && (request.value))
                 {

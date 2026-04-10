@@ -640,6 +640,7 @@ int main(int argc, char **argv)
 
     if (download)
     {
+        // TODO - recover from error
         write_dfu_image(firmware_filename);
         if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
         {
@@ -649,6 +650,7 @@ int main(int argc, char **argv)
     }
     else if (upload)
     {
+        // TODO - recover from error
         read_dfu_image(firmware_filename);
         if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
         {
