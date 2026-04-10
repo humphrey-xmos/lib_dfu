@@ -323,7 +323,10 @@ int write_dfu_image(char *file)
 
     // 0 length download terminates
     dfu_download(0, 0, 0, NULL);
-    dfu_getStatus(0, &dfuState, &timeout, &nextDfuState, &strIndex);
+    do {
+        dfu_getStatus(0, &dfuState, &timeout, &nextDfuState, &strIndex);
+        Sleep(timeout);
+    } while (nextDfuState != DFU_STATE_dfuIDLE);
 
     printf("... Download complete\n");
 
@@ -334,8 +337,8 @@ int read_dfu_image(char *file)
 {
     FILE *outFile = NULL;
     unsigned int block_count = 0;
-    unsigned int block_size = 64;
     unsigned char block_data[64];
+    int totalBytes = 0;
 
     outFile = fopen( file, "wb" );
     if( outFile == NULL )
@@ -350,27 +353,34 @@ int read_dfu_image(char *file)
     {
         int numBytes = 0;
         numBytes = dfu_upload(0, block_count, 64, block_data);
-        /* Upload is completed when dfu_upload() returns an empty block */
-        if (numBytes == 0)
+        if (numBytes < 0)
         {
-            /* If upload is complete, but no block has been read,
-               issue a warning about the upgrade image
-            */
+            fprintf(stderr,"dfu_upload error (%d)\n", numBytes);
+            break;
+        }
+        else if (numBytes == 0)
+        {
+            /* If upload is complete, but no block has been read, issue a warning about the upgrade image */
             if (block_count==0) {
                 printf("... WARNING: Upgrade image size is 0: check if image is present in the flash\n");
             }
             break;
         }
-        else if (numBytes < 0)
+
+        totalBytes += numBytes;
+        fwrite(block_data, 1, numBytes, outFile);
+        block_count++;
+
+        if (numBytes < 64)
         {
-            fprintf(stderr,"dfu_upload error (%d)\n", numBytes);
             break;
         }
-        fwrite(block_data, 1, block_size, outFile);
-        block_count++;
     }
 
     fclose(outFile);
+
+    printf("... Upload complete (%d bytes) to file (%s)\n", totalBytes, file);
+
     return 0;
 }
 
@@ -587,6 +597,7 @@ int main(int argc, char **argv)
         libusb_release_interface(devh, XMOS_DFU_IF);
         libusb_close(devh);
 
+        // TODO - improve turn-around timing
         printf("Waiting for device to restart and enter DFU mode...\n");
 
         // Wait for device to enter dfu mode and restart
@@ -656,11 +667,11 @@ int main(int argc, char **argv)
             fprintf(stderr, "error detaching\n");
             return -1;
         }
-        if (dfu_reset() < 0)
-        {
-            fprintf(stderr, "error resetting\n");
-            return -1;
-        }
+        // if (dfu_reset() < 0)
+        // {
+        //     fprintf(stderr, "error resetting\n");
+        //     return -1;
+        // }
     }
     else
     {
