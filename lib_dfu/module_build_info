@@ -3,7 +3,7 @@ VERSION = 2.0.0
 DEPENDENT_MODULES = lib_xassert(>=4.3.2) \
                     lib_logging(>=3.4.0)
 
-MODULE_XCC_FLAGS = $(XCC_FLAGS) -Os -g -Wall -Wextra -Wshadow \
+MODULE_XCC_FLAGS = $(XCC_FLAGS) -Os -mno-dual-issue -g -Wall -Wextra -Wshadow \
                     -Wconversion -Wdiv-by-zero -Wfloat-equal -Wsign-compare
 
 SOURCE_DIRS = src src/modules src/usb src/control flash/quad

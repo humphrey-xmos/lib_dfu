@@ -22,6 +22,7 @@ set(LIB_XC_SRCS             src/dfu.xc
                             src/control/dfu_control_server.xc)
 
 set(LIB_COMPILER_FLAGS      -Os
+                            -mno-dual-issue
                             -g
                             -report
                             -Wall
