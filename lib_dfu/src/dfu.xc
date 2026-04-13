@@ -356,7 +356,7 @@ static struct dfu_cmd_response state_dnload_sync(enum dfu_cmd_request request, u
 
 static struct dfu_cmd_response state_manifest_sync(enum dfu_cmd_request request, uint8_t (&?block)[DFU_TRANSFER_SIZE_BYTES], int32_t block_size_bytes) {
   struct dfu_cmd_response response = { DFU_API_BAD_PARAM, 0, 0 };
-  static int32_t manifest_deferred = 0;
+  static int32_t flash_finalised = 0;
 
   if (request == DFU_DEFERRED_ACTION_FLASH_MANIFEST) {
     struct dfu_sub_response rqst_status = sub_sm_process_manifest(dfu_fifo);
@@ -364,20 +364,20 @@ static struct dfu_cmd_response state_manifest_sync(enum dfu_cmd_request request,
       response = error_condition(rqst_status.status, 0);
     } else {
       response.status = DFU_API_SUCCESS;
+      flash_finalised = rqst_status.flash_finalised;
     }
 
   } else if (request == DFU_GETSTATUS) {
     int32_t poll_timeout = 0;
-    if (isnull(block) || block_size_bytes != DFU_GET_STATUS_PAYLOAD_SIZE_BYTES) {
+    if (isnull(block) || (block_size_bytes != DFU_GET_STATUS_PAYLOAD_SIZE_BYTES)) {
       response = error_condition(DFU_errUNKNOWN, 0);
 
     } else {
-      if (fifo_is_empty(dfu_fifo) && manifest_deferred) {
+      if (fifo_is_empty(dfu_fifo) && flash_finalised) {
         response = normal_transition(STATE_DFU_IDLE);
-        manifest_deferred = 0;
+        flash_finalised = 0;
 
       } else {
-        manifest_deferred = 1;
         response = normal_transition(STATE_DFU_MANIFEST);
         response = normal_transition(STATE_DFU_MANIFEST_SYNC);
         response.deferred_request = DFU_DEFERRED_ACTION_FLASH_MANIFEST;
@@ -400,7 +400,7 @@ static struct dfu_cmd_response state_download_idle(const uint8_t (&?write_block)
   UNUSED(block_num);
 
   struct dfu_cmd_response response = { DFU_API_BAD_PARAM, 0, 0 };
-  if (block_size_bytes <= 0) {
+  if (block_size_bytes == 0) {
       response = normal_transition(STATE_DFU_MANIFEST_SYNC);
 
   } else if (!isnull(write_block)) {
@@ -569,6 +569,7 @@ struct dfu_cmd_response dfu_request_with_arguments(enum dfu_cmd_request request,
 
   } else if ((request == DFU_DETACH) && (state == STATE_DFU_ERROR)) {
     // If otherwise unhandled...
+    flash_deinit();
     response = normal_transition(STATE_APP_IDLE);
     response.deferred_request = DFU_DEFERRED_ACTION_REBOOT;
 

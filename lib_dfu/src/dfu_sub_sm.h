@@ -16,6 +16,7 @@ struct dfu_sub_request {
 
 struct dfu_sub_response {
   enum dfu_status status;
+  int32_t flash_finalised;
 };
 
 enum dnload_sub_state {
