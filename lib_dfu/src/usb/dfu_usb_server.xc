@@ -73,6 +73,7 @@ void dfu_usb_server(server interface i_dfu i)
                     /* This is USB DFU mode entry mechanism, delegate to USB request handling. */
                 } else if (dfu.deferred_request != 0) {
                     dfu_request_with_arguments(dfu.deferred_request, null, 0, null);
+                    dfu.deferred_request = 0;
                 }
                 break;
 

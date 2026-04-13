@@ -82,7 +82,7 @@
  * which require the DFU task to be allocated to a thread.
  */
 #ifndef DFU_CONFIG_USB_INBAND_FUNCTIONS
-#define DFU_CONFIG_USB_INBAND_FUNCTIONS 0
+#define DFU_CONFIG_USB_INBAND_FUNCTIONS (DFU_USB_EN)
 #endif
 
 /**

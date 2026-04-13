@@ -45,15 +45,6 @@ static unsigned GetDFUFlag()
                                     (USB_BM_REQTYPE_TYPE_VENDOR << 5) | \
                                     (USB_BM_REQTYPE_RECIP_INTER))
 
-/* Windows core USB/device driver stack may not like device coming off bus for
- * a very short period of less than 500ms. Enforce at least 500ms by stalling.
- * This may not have the desired effect depending on whether 'off the bus'
- * requires device terminations disabled (PHY off). In that case we would be
- * better off doing the reboot to DFU and then delaying PHY initialisation
- * instead. Suggest revisiting.
- */
-#define DELAY_BEFORE_REBOOT_TO_DFU_MS     500
-
 static int DFU_mode_active = 0;
 
 int DFUModeIsActive(void)
@@ -216,7 +207,8 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
         }
         else if (result.deferred_request == DFU_DEFERRED_ACTION_REBOOT)
         {
-            DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * XS1_TIMER_KHZ);
+            // TODO - fix: this should be DELAY_BEFORE_REBOOT_FROM_DFU_MS, may affect dfu_control_server
+            DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * XS1_TIMER_KHZ);
             device_reboot();
         }
     } else {

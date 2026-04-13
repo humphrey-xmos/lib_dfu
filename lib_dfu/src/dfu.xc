@@ -186,7 +186,14 @@ static struct dfu_cmd_response state_detach(enum dfu_cmd_request request) {
   if (request == XMOS_DFU_BUS_RESET) {
     response = normal_transition(STATE_DFU_IDLE);
     // TODO - USB DFU entry should send detach request from app init. After reboot triggered from DETACH.
-#if defined(DFU_CONFIG_USB_INBAND_FUNCTIONS) && (DFU_CONFIG_USB_INBAND_FUNCTIONS == 0)
+#if defined(DFU_CONFIG_USB_INBAND_FUNCTIONS) && (DFU_CONFIG_USB_INBAND_FUNCTIONS == 1)
+    if (!flash_is_connected()) {
+      if (flash_init() != DFU_FLASH_OK) {
+        response = error_condition(DFU_errTARGET, 0);
+        return response;
+      }
+    }
+#else
     response.deferred_request = DFU_DEFERRED_ACTION_FLASH_CONNECT;
 #endif
 
@@ -284,15 +291,18 @@ static struct dfu_cmd_response state_dfu_idle(enum dfu_cmd_request request) {
       response.status = DFU_API_SUCCESS;
     }
 
-  } else if (request == DFU_DEFERRED_ACTION_REVERT_FACTORY) {
-    response = action_revert_factory();
-
   } else if (request == XMOS_DFU_REVERTFACTORY) {
+#if defined(DFU_CONFIG_USB_INBAND_FUNCTIONS) && (DFU_CONFIG_USB_INBAND_FUNCTIONS == 0)
     response.deferred_request = DFU_DEFERRED_ACTION_REVERT_FACTORY;
     response.status = DFU_API_SUCCESS;
     
+  } else if (request == DFU_DEFERRED_ACTION_REVERT_FACTORY) {
+#endif
+    response = action_revert_factory();
+
   } else if (request == DFU_DETACH) {
     /* Handle detach as exit from DFUidle for Windows */
+    flash_deinit();
     response = normal_transition(STATE_APP_IDLE);
     response.deferred_request = DFU_DEFERRED_ACTION_REBOOT;
 
