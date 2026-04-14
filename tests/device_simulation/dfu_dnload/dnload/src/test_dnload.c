@@ -320,14 +320,14 @@ void dnload(const uint8_t images[MAX_IMAGE_SIZE], int32_t block_size, int32_t bl
   }
 }
 
-void verify(const uint8_t images[MAX_IMAGE_SIZE], size_t length) {
+void verify(const uint8_t images[MAX_IMAGE_SIZE], int length) {
   debug_printf("verify\n");
 
-  int cmp = memcmp(fl.partitions.u_contents, images, length);
+  int cmp = memcmp(fl.partitions.u_contents, images, (size_t)length);
   TEST_ASSERT_EQUAL(0, cmp);
 
   /* Page-by-page verification */
-  for (size_t i = 0; i < length; i += 256) {
+  for (int i = 0; i < length; i += 256) {
     int address = fl.partitions.u_start + i;
     if (!fl.page_verified[address / 256]) {
       debug_printf("page not verified 0x%X\n", address);
@@ -406,7 +406,7 @@ void test_dnload_write_less_than_one_page(void) {
   detach();
   dnload((const uint8_t *)images, block_size, block_count, tail_size, repeats);
 
-  verify((const uint8_t *)images, (size_t)((block_size * block_count) + tail_size));
+  verify((const uint8_t *)images, ((block_size * block_count) + tail_size));
   
   reboot();
   

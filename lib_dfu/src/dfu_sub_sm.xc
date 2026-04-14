@@ -131,6 +131,7 @@ struct dfu_sub_response sub_sm_process_dnload(struct fifo &dfu_fifo)
 
       break;
 
+    // TODO - support time bound repeated erase cycle.
     case DNLOAD_ERASING:
       poll_timeout = POLL_TIMEOUT_DNLOAD_ERASE_MSEC;
       // TODO - replace FLASH_MAX_UPGRADE_SIZE with image size from first page downloaded

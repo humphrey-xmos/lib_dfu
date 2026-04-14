@@ -89,6 +89,7 @@ USB_Config_Descriptor_DFU_t DFUcfgDesc = {
 #endif
         .bMaxPower                  = XUA_BMAX_POWER,
     },
+    // TODO - support multiple alternates.
     .InterfaceDesc =
     {
         .bLength                       = sizeof(USB_Descriptor_Interface_t),

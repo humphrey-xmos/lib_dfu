@@ -1,8 +1,8 @@
 // Copyright 2015-2026 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-#ifndef __DFU_INTERFACE_H__
-#define __DFU_INTERFACE_H__
+#ifndef DFU_INTERFACE_H
+#define DFU_INTERFACE_H
 
 #if __XC__
 

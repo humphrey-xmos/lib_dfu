@@ -669,11 +669,6 @@ int main(int argc, char **argv)
             fprintf(stderr, "error detaching\n");
             return -1;
         }
-        // if (dfu_reset() < 0)
-        // {
-        //     fprintf(stderr, "error resetting\n");
-        //     return -1;
-        // }
     }
     else
     {

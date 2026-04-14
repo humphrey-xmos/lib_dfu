@@ -23,12 +23,6 @@ void dfu_usb_server(server interface i_dfu i)
                 -> struct dfu_cmd_response dfu:
 
                 unsigned char data_local[DFU_TRANSFER_SIZE_BYTES];
-                // if (request.length != data_buffer_length)
-                // {
-                //     dfu.status = DFU_API_DATA_LENGTH_ERROR;
-                //     dfu.return_data_len = data_buffer_length;
-                //     break;
-                // }
 
                 // TODO - do we pass value "inDFU" into state machine to tidy this up?
                 // If we are booting into DFU mode...
@@ -56,7 +50,7 @@ void dfu_usb_server(server interface i_dfu i)
                 else
                 {
                     /* Split reads and writes */
-                    if ((request.request == DFU_UPLOAD) || (request.request == DFU_GETSTATUS) || (request.request == DFU_GETSTATE) || (request.request == XMOS_DFU_GET_DESCRIPTOR))
+                    if ((request.request == DFU_UPLOAD) || (request.request == DFU_GETSTATUS) || (request.request == DFU_GETSTATE) || (request.request == XMOS_DFU_GETPROFILE))
                     {
                         dfu = dfu_request_with_arguments(request.request, data_local, request.length, null);
                         memcpy(data_buffer, data_local, DFU_TRANSFER_SIZE_BYTES);
@@ -66,8 +60,6 @@ void dfu_usb_server(server interface i_dfu i)
                         dfu = dfu_request_with_arguments(request.request, data_local, data_buffer_length, blocknum);
                     }
                 }
-
-                // debug_printf("DFU USB command status=%d\n", dfu.status);
 
   	            if ((dfu.deferred_request == DFU_DEFERRED_ACTION_REBOOT_TO_DFU) || (dfu.deferred_request == DFU_DEFERRED_ACTION_REBOOT)) {
                     /* This is USB DFU mode entry mechanism, delegate to USB request handling. */
