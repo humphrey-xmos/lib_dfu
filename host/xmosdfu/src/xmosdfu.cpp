@@ -90,10 +90,11 @@ static int probe_configuration(libusb_device *dev, struct libusb_device_descript
             {
                 XMOS_DFU_IF = inter_desc->bInterfaceNumber;
                 libusb_get_device_descriptor(dev, desc);
+                int lib_speed = libusb_get_device_speed(dev);
 
                 if(inter_desc->bInterfaceProtocol == bInterfaceProtocol_RUNTIME)
                 {
-                    printf("Found Runtime: [%04x:%04x] ver=%04x\n", desc->idVendor, desc->idProduct, desc->bcdDevice);
+                    printf("Found Runtime: [%04x:%04x] ver=%04x, %s\n", desc->idVendor, desc->idProduct, desc->bcdDevice, (lib_speed == LIBUSB_SPEED_HIGH) ? "high-speed" : "full-speed");
                     if(!list)
                     {
                         if((desc->idVendor != match_vendor) || (desc->idProduct != match_product))
@@ -111,7 +112,7 @@ static int probe_configuration(libusb_device *dev, struct libusb_device_descript
                 }
                 else if(inter_desc->bInterfaceProtocol == bInterfaceProtocol_DFU)
                 {
-                    printf("Found DFU: [%04x:%04x] ver=%04x\n", desc->idVendor, desc->idProduct, desc->bcdDevice);
+                    printf("Found DFU: [%04x:%04x] ver=%04x, %s\n", desc->idVendor, desc->idProduct, desc->bcdDevice, (lib_speed == LIBUSB_SPEED_HIGH) ? "high-speed" : "full-speed");
                     if(!list)
                     {
                         if((match_vendor_dfu >= 0 && desc->idVendor != match_vendor_dfu) ||
@@ -166,8 +167,7 @@ static int find_xmos_device(unsigned int list)
 
 int xmos_dfu_revertfactory(void)
 {
-    libusb_control_transfer(devh, USB_BMREQ_H2D_VENDOR_INT, XMOS_DFU_REVERTFACTORY, 0, 0, NULL, 0, 0);
-    return 0;
+    return libusb_control_transfer(devh, USB_BMREQ_H2D_VENDOR_INT, XMOS_DFU_REVERTFACTORY, 0, 0, NULL, 0, 1000);
 }
 
 int dfu_detach(int interface, unsigned int timeout)
@@ -182,48 +182,42 @@ int dfu_reset()
 
 int dfu_getState(int interface, unsigned char *state)
 {
-    libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATE, 0, (uint16_t)interface, state, 1, 0U);
-    return 0;
+    return libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATE, 0, (uint16_t)interface, state, 1, 0U);
 }
 
-int dfu_getStatus(int interface, unsigned char *state, unsigned int *timeout,
+int dfu_getStatus(int interface, unsigned char *status, unsigned int *timeout,
                   unsigned char *nextState, unsigned char *strIndex)
 {
-    unsigned int data[2];
-    libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATUS, 0, (uint16_t)interface, (unsigned char *)data, 6, 0U);
+    unsigned int data[2] = {0};
+    int ret = libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATUS, 0, (uint16_t)interface, (unsigned char *)data, 6, 0U);
 
-    *state = data[0] & 0xff;
+    *status = data[0] & 0xff;
     *timeout = (data[0] >> 8) & 0xffffff;
     *nextState = data[1] & 0xff;
     *strIndex = (data[1] >> 8) & 0xff;
-    return 0;
+    return ret;
 }
 
 int dfu_clrStatus(int interface)
 {
-    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_CLRSTATUS, 0, (uint16_t)interface, NULL, 0, 0U);
-    return 0;
+    return libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_CLRSTATUS, 0, (uint16_t)interface, NULL, 0, 0U);
 }
 
 int dfu_abort(int interface)
 {
-    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_ABORT, 0, (uint16_t)interface, NULL, 0, 0U);
-    return 0;
+    return libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_ABORT, 0, (uint16_t)interface, NULL, 0, 0U);
 }
 
 int dfu_download(int interface, unsigned int block_num, unsigned int size, unsigned char *data)
 {
     //printf("... Downloading block number %d size %d\r", block_num, size);
     /* Returns actual data size transferred */
-    int transfered = libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_DNLOAD, (uint16_t)block_num, (uint16_t)interface, data, (uint16_t)size, 0U);
-    return transfered;
+    return libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_DNLOAD, (uint16_t)block_num, (uint16_t)interface, data, (uint16_t)size, 0U);
 }
 
 int dfu_upload(int interface, unsigned int block_num, unsigned int size, unsigned char*data)
 {
-    int numBytes = 0;
-    numBytes = libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_UPLOAD, (uint16_t)block_num, (uint16_t)interface, (unsigned char *)data, (uint16_t)size, 0U);
-    return numBytes;
+    return libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_UPLOAD, (uint16_t)block_num, (uint16_t)interface, (unsigned char *)data, (uint16_t)size, 0U);
 }
 
 int write_dfu_image(char *file)
@@ -235,7 +229,7 @@ int write_dfu_image(char *file)
     int remainder = 0;
     unsigned char block_data[256];
 
-    unsigned char dfuState = 0;
+    unsigned char dfuStatus = 0;
     unsigned char nextDfuState = 0;
     unsigned int timeout = 0;
     unsigned char strIndex = 0;
@@ -273,7 +267,7 @@ int write_dfu_image(char *file)
 
     if( 0 != fseek( inFile, 0, SEEK_SET ) )
     {
-        fprintf(stderr,"Error: Failed to input file pointer.\n");
+        fprintf(stderr,"Error: Failed to reset input file pointer.\n");
         return -1;
     }
 
@@ -288,7 +282,50 @@ int write_dfu_image(char *file)
     {
         memset(block_data, 0x0, block_size);
         // TODO - make use of return values
-        (void)fread(block_data, 1, block_size, inFile);
+        size_t read = fread(block_data, 1, block_size, inFile);
+        if (read != (size_t)block_size)
+        {
+            fprintf(stderr,"Error: Failed to read input data file.\n");
+            return -1;
+        }
+        int transferred = dfu_download(0, dfuBlockCount, block_size, block_data);
+        if(transferred != block_size)
+        {
+            /* Error */
+            printf("ERROR: %d\n", transferred);
+            dfuStatus = 0;
+            nextDfuState = 0;
+            timeout = 0;
+            int dfu_Sta = dfu_getStatus(0, &dfuStatus, &timeout, &nextDfuState, &strIndex);
+            fprintf(stderr,"dfu_getStatus() [%d] returned state %d (%d).\n", dfu_Sta, nextDfuState, dfuStatus);
+            return -1;
+
+        }
+        do {
+            dfu_getStatus(0, &dfuStatus, &timeout, &nextDfuState, &strIndex);
+            if(nextDfuState == DFU_STATE_dfuERROR)
+            {
+                fprintf(stderr,"Error: dfu_getStatus() returned state as DFU_STATE_dfuERROR (%d).\n", dfuStatus);
+                return -1;
+            }
+            if(nextDfuState == DFU_STATE_dfuDNLOAD_IDLE)
+            {
+                dfuBlockCount++;
+                break;
+            }
+            Sleep(timeout);
+        } while(1);
+    }
+
+    if (remainder)
+    {
+        memset(block_data, 0x0, block_size);
+        size_t read = fread(block_data, 1, (size_t)remainder, inFile);
+        if (read != (size_t)remainder)
+        {
+            fprintf(stderr,"Error: Failed to read input data file.\n");
+            return -1;
+        }
         int transferred = dfu_download(0, dfuBlockCount, block_size, block_data);
         if(transferred != block_size)
         {
@@ -298,40 +335,39 @@ int write_dfu_image(char *file)
 
         }
         do {
-            dfu_getStatus(0, &dfuState, &timeout, &nextDfuState, &strIndex);
+            dfu_getStatus(0, &dfuStatus, &timeout, &nextDfuState, &strIndex);
+            Sleep(timeout);
             if(nextDfuState == DFU_STATE_dfuERROR)
             {
-                fprintf(stderr,"Error: dfu_getStatus() returned state as DFU_STATE_dfuERROR.\n");
+                fprintf(stderr,"Error: dfu_getStatus() returned state as DFU_STATE_dfuERROR (%d).\n", dfuStatus);
                 return -1;
             }
-            if(nextDfuState == DFU_STATE_dfuDNLOAD_IDLE)
-            {
-                dfuBlockCount++;
-                break;
-            }
-            Sleep(timeout);
-        }while(1);
+        } while (nextDfuState != DFU_STATE_dfuDNLOAD_IDLE);
     }
 
-    if (remainder)
+    if (nextDfuState == DFU_STATE_dfuDNLOAD_IDLE)
     {
-        memset(block_data, 0x0, block_size);
-        (void)fread(block_data, 1, (size_t)remainder, inFile);
-        dfu_download(0, dfuBlockCount, block_size, block_data);
-        dfu_getStatus(0, &dfuState, &timeout, &nextDfuState, &strIndex);
+        // 0 length download terminates
+        dfu_download(0, 0, 0, NULL);
+        do {
+            dfu_getStatus(0, &dfuStatus, &timeout, &nextDfuState, &strIndex);
+            Sleep(timeout);
+            if(nextDfuState == DFU_STATE_dfuERROR)
+            {
+                fprintf(stderr,"Error: dfu_getStatus() returned state as DFU_STATE_dfuERROR (%d).\n", dfuStatus);
+                return -1;
+            }
+        } while (nextDfuState != DFU_STATE_dfuIDLE);
     }
-
-    // 0 length download terminates
-    dfu_download(0, 0, 0, NULL);
-    do {
-        dfu_getStatus(0, &dfuState, &timeout, &nextDfuState, &strIndex);
-        Sleep(timeout);
-    } while (nextDfuState != DFU_STATE_dfuIDLE);
+    else
+    {
+        printf("... Download failed, state: %d, status: %d\n", nextDfuState, dfuStatus);
+    }
 
     printf("... Download complete\n");
 
     return 0;
-    }
+}
 
 int read_dfu_image(char *file)
 {
@@ -339,6 +375,7 @@ int read_dfu_image(char *file)
     unsigned int block_count = 0;
     unsigned char block_data[64];
     int totalBytes = 0;
+    int return_code = 0;
 
     outFile = fopen( file, "wb" );
     if( outFile == NULL )
@@ -356,6 +393,13 @@ int read_dfu_image(char *file)
         if (numBytes < 0)
         {
             fprintf(stderr,"dfu_upload error (%d)\n", numBytes);
+            unsigned char dfuStatus = 0;
+            unsigned char nextDfuState = 0;
+            unsigned int timeout = 0;
+            unsigned char strIndex = 0;
+            int dfu_Sta = dfu_getStatus(0, &dfuStatus, &timeout, &nextDfuState, &strIndex);
+            fprintf(stderr,"dfu_getStatus() [%d] returned state %d (%d).\n", dfu_Sta, nextDfuState, dfuStatus);
+            return_code = -1;
             break;
         }
         else if (numBytes == 0)
@@ -368,7 +412,7 @@ int read_dfu_image(char *file)
         }
 
         totalBytes += numBytes;
-        fwrite(block_data, 1, numBytes, outFile);
+        fwrite(block_data, 1, (size_t)numBytes, outFile);
         block_count++;
 
         if (numBytes < 64)
@@ -379,9 +423,16 @@ int read_dfu_image(char *file)
 
     fclose(outFile);
 
-    printf("... Upload complete (%d bytes) to file (%s)\n", totalBytes, file);
+    if (return_code == 0)
+    {
+        printf("... Upload complete (%d bytes) to file (%s)\n", totalBytes, file);
+    }
+    else
+    {
+        fprintf(stderr,"... Upload failed (%d bytes) to file (%s)\n", totalBytes, file);
+    }
 
-    return 0;
+    return return_code;
 }
 
 
@@ -638,36 +689,59 @@ int main(int argc, char **argv)
 
     printf("... DFU firmware upgrade device opened\n");
 
+    int return_code = 0;
     if (download)
     {
         // TODO - recover from error
-        write_dfu_image(firmware_filename);
-        if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+        int write = write_dfu_image(firmware_filename);
+        if (write < 0)
+        {
+            fprintf(stderr, "Error writing firmware image to device\n");
+            return_code = -1;
+        }
+        else if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
         {
             fprintf(stderr, "error detaching\n");
-            return -1;
+            return_code = -1;
         }
     }
     else if (upload)
     {
         // TODO - recover from error
-        read_dfu_image(firmware_filename);
-        if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+        int read = read_dfu_image(firmware_filename);
+        if (read < 0)
+        {
+            fprintf(stderr, "Error reading firmware image from device\n");
+            return_code = -1;
+        }
+        else if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
         {
             fprintf(stderr, "error detaching\n");
-            return -1;
+            return_code = -1;
         }
     }
     else if (revert)
     {
         printf("... Reverting device to factory image\n");
-        xmos_dfu_revertfactory();
-        // Give device time to revert firmware
-        Sleep(2 * 1000);
-        if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+        int revert_status = xmos_dfu_revertfactory();
+        if (revert_status < 0)
         {
-            fprintf(stderr, "error detaching\n");
-            return -1;
+            fprintf(stderr, "Error reverting to factory image (%d)\n", revert_status);
+            return_code = -1;
+        }
+        else
+        {
+            if (revert_status != 0)
+            {
+                fprintf(stderr, "Unexpected return code from revert factory request: %d\n", revert_status);
+            }
+            // Give device time to revert firmware
+            Sleep(2 * 1000);
+            if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+            {
+                fprintf(stderr, "error detaching\n");
+                return_code = -1;
+            }
         }
     }
     else
@@ -675,17 +749,23 @@ int main(int argc, char **argv)
         if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
         {
             fprintf(stderr, "error detaching\n");
-            return -1;
+            return_code = -1;
         }
     }
 
-    printf("... Returning device to application mode\n");
+    if (return_code == 0)
+    {
+        printf("... Returning device to application mode\n");
+    }
 
     // END OF DFU APPLICATION MODE
 
     libusb_release_interface(devh, XMOS_DFU_IF);
     libusb_close(devh);
     libusb_exit(NULL);
+    
+    // Allow time for device to restart and re-enumerate in application mode before exiting application
+    Sleep(1 * 1000);
 
-    return 0;
+    return return_code;
 }
