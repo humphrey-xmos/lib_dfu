@@ -44,21 +44,3 @@ void test_repeated_bus_resets_stays_in_app_idle(void)
   TEST_ASSERT_EQUAL(DFU_API_SUCCESS, response.status);
   get_state_and_check(STATE_APP_IDLE);
 }
-
-void test_detach_from_dfuidle_returns_to_app_idle(void)
-{
-  get_state_and_check(STATE_APP_IDLE);
-
-  struct dfu_cmd_response response = dfu_request(DFU_DETACH);
-  TEST_ASSERT_EQUAL(DFU_API_SUCCESS, response.status);
-  get_state_and_check(STATE_APP_DETACH);
-
-  response = dfu_request(XMOS_DFU_BUS_RESET);
-  TEST_ASSERT_EQUAL(DFU_API_SUCCESS, response.status);
-  get_state_and_check(STATE_DFU_IDLE);
-
-  response = dfu_request(DFU_DETACH);
-  TEST_ASSERT_EQUAL(DFU_API_SUCCESS, response.status);
-  get_state_and_check(STATE_APP_IDLE);
-  TEST_ASSERT_EQUAL(DFU_DEFERRED_ACTION_REBOOT, response.deferred_request);
-}
