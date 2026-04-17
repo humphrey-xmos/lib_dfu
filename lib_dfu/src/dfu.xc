@@ -538,9 +538,9 @@ struct dfu_cmd_response dfu_request_with_arguments(enum dfu_cmd_request request,
       }
       break;
 
-    default:
-      response = error_condition(DFU_errUNKNOWN, 0);
-      break;
+    // default:
+    //   response = error_condition(DFU_errUNKNOWN, 0);
+    //   break;
   }
 
   /* Handle common requests last */
