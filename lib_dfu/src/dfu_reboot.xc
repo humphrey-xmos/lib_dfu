@@ -3,10 +3,8 @@
 #include <xs1.h>
 #include <platform.h>
 #include <print.h>
-#include <xs1_su.h>
 
 #include "dfu.h"
-#include "xs2_su_registers.h"
 #include "xud_hal.h"
 
 #define PLL_MASK 0x3FFFFFFF
