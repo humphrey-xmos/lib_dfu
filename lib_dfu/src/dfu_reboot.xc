@@ -7,7 +7,8 @@
 
 #include "dfu.h"
 #include "xs2_su_registers.h"
-#define XS2_SU_PERIPH_USB_ID 0x1
+#include "xud_hal.h"
+
 #define PLL_MASK 0x3FFFFFFF
 
 #if (DFU_ENABLE == 1)
@@ -37,11 +38,7 @@ void device_reboot(void)
     unsigned int tileArrayLength;
     unsigned int localTileNum;
 
-#if defined(__XS2A__)
-    /* Disconnect from bus */
-    unsigned data[] = {4};
-    write_periph_32(usb_tile, XS2_SU_PERIPH_USB_ID, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 1, data);
-#endif
+    XUD_HAL_EnterMode_TristateDrivers();
 
     tileArrayLength = sizeof(tile)/sizeof(tileref);
 
