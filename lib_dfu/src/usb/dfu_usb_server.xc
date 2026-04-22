@@ -19,46 +19,24 @@ void dfu_usb_server(server interface i_dfu i)
     {
         select
         {
-            case i.HandleDfuRequest(struct dfu_request_params request, unsigned data_buffer[], unsigned data_buffer_length)
+            case i.handle_dfu_request(struct dfu_request_params request, unsigned data_buffer[], unsigned data_buffer_length)
                 -> struct dfu_cmd_response dfu:
 
                 unsigned char data_local[DFU_TRANSFER_SIZE_BYTES];
 
-                // TODO - do we pass value "inDFU" into state machine to tidy this up?
-                // If we are booting into DFU mode...
-                if ((request.request == XMOS_DFU_BUS_RESET) && (request.value))
-                {
-                    /* USB specific DFU mode entry mechanism 
-                     * Only send DFU_DETACH and BUS_RESET if request.value is set and we are in APP_IDLE state
-                     * Otherwise, ignore */
-                    struct dfu_cmd_response getstate_response = dfu_request_with_arguments(DFU_GETSTATE, data_local, DFU_GET_STATE_PAYLOAD_SIZE_BYTES, null);
-                    if ((getstate_response.status == DFU_API_SUCCESS) && (data_local[0] == STATE_APP_IDLE))
-                    {
-                        struct dfu_request_params prepend_detach = { DFU_DETACH, 0, 0, 0 };
-                        dfu_request_with_arguments(DFU_DETACH, data_local, 0, null);
-                        dfu = dfu_request_with_arguments(request.request, data_local, 0, null);
-                    }
-                    else
-                    {
-                        dfu.status = DFU_OK;
-                        dfu.return_data_len = 0;
-                        dfu.deferred_request = 0;
-                    }
-                    // TODO fix this in dfu_usb_requests...
-                    dfu.status = request.value;
-                }
-                else
-                {
                     /* Split reads and writes */
-                    if ((request.request == DFU_UPLOAD) || (request.request == DFU_GETSTATUS) || (request.request == DFU_GETSTATE) || (request.request == XMOS_DFU_GETPROFILE))
+                if ((request.request == DFU_UPLOAD) || (request.request == DFU_GETSTATUS) || (request.request == DFU_GETSTATE))
                     {
                         dfu = dfu_request_with_arguments(request.request, data_local, request.length, null);
                         memcpy(data_buffer, data_local, DFU_TRANSFER_SIZE_BYTES);
+                }
+                else if (request.request == XMOS_DFU_GETPROFILE)
+                {
+                    // TODO
                     } else {
-                        int32_t blocknum = request.value;
+                    int32_t request_value = (int32_t)request.value;
                         memcpy(data_local, data_buffer, data_buffer_length);
-                        dfu = dfu_request_with_arguments(request.request, data_local, data_buffer_length, blocknum);
-                    }
+                    dfu = dfu_request_with_arguments(request.request, data_local, data_buffer_length, request_value);
                 }
 
   	            if ((dfu.deferred_request == DFU_DEFERRED_ACTION_REBOOT_TO_DFU) || (dfu.deferred_request == DFU_DEFERRED_ACTION_REBOOT)) {

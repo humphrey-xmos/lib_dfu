@@ -44,3 +44,25 @@ void test_repeated_bus_resets_stays_in_app_idle(void)
   TEST_ASSERT_EQUAL(DFU_API_SUCCESS, response.status);
   get_state_and_check(STATE_APP_IDLE);
 }
+
+void test_usb_dfu_mode_entry(void)
+{
+  get_state_and_check(STATE_APP_IDLE);
+
+  int32_t dfu_mode = 1;
+
+  struct dfu_cmd_response response = dfu_request_with_arguments(XMOS_DFU_BUS_RESET, NULL, 0, &dfu_mode);
+  TEST_ASSERT_EQUAL(DFU_API_SUCCESS, response.status);
+  get_state_and_check(STATE_DFU_IDLE);
+
+  // bus-reset with dfu-mode set should not cause transition back to app idle
+  response = dfu_request_with_arguments(XMOS_DFU_BUS_RESET, NULL, 0, &dfu_mode);
+  TEST_ASSERT_EQUAL(DFU_API_SUCCESS, response.status);
+  get_state_and_check(STATE_DFU_IDLE);
+  
+  // bus-reset with dfu-mode cleared should not cause transition back to app idle
+  dfu_mode = 0;
+  response = dfu_request_with_arguments(XMOS_DFU_BUS_RESET, NULL, 0, &dfu_mode);
+  TEST_ASSERT_EQUAL(DFU_API_SUCCESS, response.status);
+  get_state_and_check(STATE_APP_IDLE);
+}

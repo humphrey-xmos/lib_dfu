@@ -2,7 +2,7 @@
 .venv
 
 .venv*/
-build/
+build*/
 _build/
 .build/
 

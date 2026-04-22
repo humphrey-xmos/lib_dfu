@@ -25,7 +25,7 @@ int main(void)
     printstr("Checking for upgrade images...\n");
     int status = flash_init();
     if(status == DFU_FLASH_OK) {
-        printstr("Opened flash.");
+        printstr("Opened flash.\n");
         int32_t sector_size = flash_get_sector_size();
         enum flash_status erase_status;
 

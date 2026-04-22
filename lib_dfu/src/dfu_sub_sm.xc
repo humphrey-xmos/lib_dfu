@@ -64,6 +64,34 @@ int32_t sub_sm_get_poll_timeout(void)
   return poll_timeout;
 }
 
+static enum dfu_status sub_sm_erase_sectors(int32_t duration_ms)
+{
+  if (duration_ms <= 0) {
+    return DFU_errUNKNOWN;
+  }
+  enum dfu_status status = DFU_errNOTDONE;
+  timer tmr;
+  unsigned time;
+  tmr :> time;
+  unsigned end_time = time + (XS1_TIMER_KHZ * (unsigned)duration_ms);
+
+  while(timeafter(end_time, time)) // Erase as many sectors as we can in given time duration
+  {
+    enum flash_status erase_status = flash_erase_sector_async(FLASH_MAX_UPGRADE_SIZE);
+    if (erase_status == DFU_FLASH_OK) {
+      status = DFU_OK;
+      break;
+    } else if (erase_status == DFU_FLASH_BUSY) {
+      /* wait */
+    } else {
+      status = DFU_errERASE;
+      break;
+    }
+    tmr :> time;
+  }
+  return status;
+}
+
 static enum dfu_status sub_sm_flash_write_page(struct fifo &dfu_fifo, uint8_t *page, int32_t page_size_bytes)
 {  
   enum dfu_status status = DFU_errTARGET;
@@ -108,7 +136,6 @@ struct dfu_sub_response sub_sm_process_dnload(struct fifo &dfu_fifo)
       if (!flash_is_connected()) {
         t_profiler :> t_profiler_start;
         if (flash_init() != DFU_FLASH_OK) {
-          // response = error_condition(DFU_errTARGET, 0);
           response.status = DFU_errWRITE;
           return response;
         }
@@ -119,13 +146,14 @@ struct dfu_sub_response sub_sm_process_dnload(struct fifo &dfu_fifo)
       t_profiler :> t_profiler_start;
       // TODO - replace FLASH_MAX_UPGRADE_SIZE with image size from first page downloaded
       enum flash_status erase_status = flash_erase_sector_async(FLASH_MAX_UPGRADE_SIZE);
-      if (erase_status != DFU_FLASH_OK && erase_status != DFU_FLASH_BUSY) {
+      if ((erase_status != DFU_FLASH_OK) && (erase_status != DFU_FLASH_BUSY)) {
         response.status = DFU_errERASE;
         return response;
       }
       t_profiler :> t_profiler_end;
       t_profile_first_erase = t_profiler_end - t_profiler_start;
 
+      poll_timeout = POLL_TIMEOUT_DNLOAD_ERASE_MSEC;
       sub_transition_dnload(DNLOAD_ERASING);
       response.status = DFU_OK;
 
@@ -134,10 +162,9 @@ struct dfu_sub_response sub_sm_process_dnload(struct fifo &dfu_fifo)
     // TODO - support time bound repeated erase cycle.
     case DNLOAD_ERASING:
       poll_timeout = POLL_TIMEOUT_DNLOAD_ERASE_MSEC;
-      // TODO - replace FLASH_MAX_UPGRADE_SIZE with image size from first page downloaded
-      enum flash_status erase_status = flash_erase_sector_async(FLASH_MAX_UPGRADE_SIZE);
+      enum dfu_status status = sub_sm_erase_sectors((DFU_FLASH_ERASE_CYCLE_MSEC - 5));
 
-      if (erase_status == DFU_FLASH_OK) {
+      if (status == DFU_OK) {
         // sector erase completed, move on to page write
         sub_transition_dnload(DNLOAD_WRITING);
         poll_timeout = POLL_TIMEOUT_DNLOAD_FIRST_WRITE_MSEC;
@@ -145,7 +172,7 @@ struct dfu_sub_response sub_sm_process_dnload(struct fifo &dfu_fifo)
         response.status = sub_sm_flash_write_page(dfu_fifo, page, sizeof(page));
         t_profile_first_write = t_profiler_end - t_profiler_start;
 
-      } else if (erase_status == DFU_FLASH_BUSY) {
+      } else if (status == DFU_errNOTDONE) {
         // still erasing, remain in this state and wait for next poll
         response.status = DFU_OK;
 

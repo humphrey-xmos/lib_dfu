@@ -47,17 +47,17 @@ static unsigned GetDFUFlag()
 
 static int DFU_mode_active = 0;
 
-int DFUModeIsActive(void)
+int dfu_is_mode_active(void)
 {
     return DFU_mode_active;
 }
 
-void DFUSetModeActive()
+void dfu_set_mode_active()
 {
     DFU_mode_active = 1;
 }
 
-void DFUSetModeInactive()
+void dfu_set_mode_inactive()
 {
     DFU_mode_active = 0;
 }
@@ -70,7 +70,7 @@ void DFUDelay(unsigned d)
     tmr when timerafter(s + d) :> void;
 }
 
-int32_t DFUCheckInitState()
+int dfu_check_init_state()
 {
     // Setting the flag, below, has always resulted in a reboot.
     unsigned flag = GetDFUFlag();
@@ -80,73 +80,73 @@ int32_t DFUCheckInitState()
     flag = _BOOT_DFU_MODE_FLAG;
 #endif
 
-    int32_t ret = 0;
+    int ret = 0;
     if (flag == _BOOT_DFU_MODE_FLAG)
     {
         ret = 1;
-        DFUSetModeActive();
+        dfu_set_mode_active();
     } else {
-        DFUSetModeInactive();
+        dfu_set_mode_inactive();
     }
     return ret;
 }
 
-// Tell the DFU state machine that a USB reset has occurred
-/* USB bus reset
+void dfu_force_dfu_mode_active(client interface i_dfu i)
+{
+    struct dfu_request_params request = { XMOS_DFU_BUS_RESET, 0, 0, 0 };
+    request.value = 1;
+    /* Interface used here such that the handler can be on another tile */
+    unsigned data_buffer[1];
+    // Do not care about result here
+    i.handle_dfu_request(request, data_buffer, 0);
+}
+
+/* USB bus reset - Tell the DFU state machine that a USB reset has occurred
  * Input: USB bus reset event.
  * Output: 1 if in DFU mode, 0 if not in DFU mode
- * State handling: On USB bus reset signalling
- * - APP_IDLE on boot with "valid" firmware (only ever valid).
- * - DFU_IDLE after request to reset from application to DFU mode (DFU_DETACH).
- * 
+ *
  * Note: DFU mode -> DFU_ERROR on boot with "invalid" firmware not possible with flashed factory firmware.
  */
-int DFUProcessResetState(client interface i_dfu i)
+int dfu_process_reset_state(client interface i_dfu i)
 {
     unsigned int inDFU = 0;
 
     unsigned flag;
     flag = GetDFUFlag();
 
-//#define START_IN_DFU 1
 #ifdef START_IN_DFU
     flag = _BOOT_DFU_MODE_FLAG;
 #endif
 
     if (flag == _BOOT_DFU_MODE_FLAG)
     {
-        /*
-         * Effectively in STATE_APP_DETACH state on entry here.
-         * To get here the device has rebooted with the flag set.
-         */
         inDFU = 1;
-        // TODO - flag is sticky at the moment to ride through multiple resets from the host (Windows).
-        // Consider clearing flag on detection of enumeration.
+        // Flag is sticky to ride through multiple resets from the host (Windows).
+        // The flag will be cleared on detection of enumeration, see dfu_usb_set_configured_state().
     }
 
     struct dfu_request_params request = { XMOS_DFU_BUS_RESET, 0, 0, 0 };
     request.value = inDFU;
     /* Interface used here such that the handler can be on another tile */
     unsigned data_buffer[1];
-    struct dfu_cmd_response result = i.HandleDfuRequest(request, data_buffer, 0);
+    struct dfu_cmd_response result = i.handle_dfu_request(request, data_buffer, 0);
     
-    // Return code of 0 means normal operation (APP_IDLE), non-zero means we are in DFU mode (DFU_IDLE or DFU_ERROR).
-    if (result.status)
+    if (inDFU)
     {
         // In DFU mode...
-        if (!DFUModeIsActive())
+        if (!dfu_is_mode_active())
         {
-            DFUSetModeActive();
+            dfu_set_mode_active();
         }
     }
     else
     {
-        if (DFUModeIsActive())
+        if (dfu_is_mode_active())
         {
-            DFUSetModeInactive();
+            dfu_set_mode_inactive();
         }
     }
-    // TODO , can we move this up...
+
     if (result.deferred_request == DFU_DEFERRED_ACTION_REBOOT)
     {
         DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * XS1_TIMER_KHZ);
@@ -176,7 +176,7 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
     request.index = sp.wIndex;
     request.length = sp.wLength;
     /* Interface used here such that the handler can be on another tile */
-    struct dfu_cmd_response result = i.HandleDfuRequest(request, data_buffer, data_buffer_len);
+    struct dfu_cmd_response result = i.handle_dfu_request(request, data_buffer, data_buffer_len);
 
     if (result.deferred_request == DFU_DEFERRED_ACTION_REBOOT_TO_DFU) {
         SetDFUFlag(_BOOT_DFU_MODE_FLAG);
@@ -236,6 +236,16 @@ int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 
 int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, client interface i_dfu dfuInterface) {
     return DFUDeviceRequests(ep0_out, ep0_in, sp, 0, dfuInterface);
+}
+
+void dfu_usb_set_configured_state(void) {
+
+    // Regardless of DFU mode entry on boot, we should clear the flag on enumeration to avoid it being sticky across multiple resets from the host.
+    SetDFUFlag(0);
+}
+
+void dfu_usb_clear_configured_state(void) {
+
 }
 
 #endif /* DFU_USB_EN */

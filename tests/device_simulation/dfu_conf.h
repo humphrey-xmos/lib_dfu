@@ -7,4 +7,6 @@
 /* Unit-testing disable flash layer in DFU library */
 #define DFU_ENABLE 0
 
+#define DFU_FLASH_ERASE_CYCLE_MSEC (5 + 1)
+
 #endif /* DFU_CONF_H */

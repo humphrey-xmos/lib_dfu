@@ -112,15 +112,20 @@
 #define POLL_TIMEOUT_DNLOAD_ENTRY_MSEC 150
 #endif
 
+/* The cycle time for the flash erase operation in milliseconds. Allows repeated erase operations to be performed within this time frame. */
+#ifndef DFU_FLASH_ERASE_CYCLE_MSEC
+#define DFU_FLASH_ERASE_CYCLE_MSEC 500
+#endif
+
 /**
- * Poll timeout for DFU download erase in milliseconds, time taken to erase following sectors of the upgrade image, when it exists.
+ * Poll timeout for DFU download erase in milliseconds, time given to erase a number of sectors of the upgrade image, when it exists.
  * 
- * The value should be taken from the Flash memory datasheet, for erase operations.
+ * The intent is that the device should attempt to erase a number of sectors within this time.
  * 
- * Values shorter than the actual time taken may cause the host to timeout or cause clock-stretching if using I2C.
+ * Values shorter than the actual time taken by the flash chip to erase one sector may cause the host to timeout or cause clock-stretching if using I2C.
  */
 #ifndef POLL_TIMEOUT_DNLOAD_ERASE_MSEC
-#define POLL_TIMEOUT_DNLOAD_ERASE_MSEC 8
+#define POLL_TIMEOUT_DNLOAD_ERASE_MSEC (DFU_FLASH_ERASE_CYCLE_MSEC)
 #endif
 
 /**
@@ -128,7 +133,7 @@
  * 
  * The first page can often take significantly longer to write than subsequent pages, as it may require additional setup such as preparing the flash for writing.
  * 
- * Values shorter than the actual time taken may cause the host to timeout or cause clock-stretching if using I2C.
+ * Values shorter than the actual time taken by the flash chip to write one page may cause the host to timeout or cause clock-stretching if using I2C.
  */
 #ifndef POLL_TIMEOUT_DNLOAD_FIRST_WRITE_MSEC
 #define POLL_TIMEOUT_DNLOAD_FIRST_WRITE_MSEC 100
