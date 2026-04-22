@@ -5,7 +5,16 @@
 #include <print.h>
 
 #include "dfu.h"
-#include "xud_hal.h"
+
+#if !defined(__XS2A__)
+#include <xs1.h>
+// TODO should be properly in HAL
+unsigned XtlSelFromMhz(unsigned m);
+#else
+// #include "XUD_USBTile_Support.h"
+#include "xs1_to_glx.h"
+#include "xs2_su_registers.h"
+#endif
 
 #define PLL_MASK 0x3FFFFFFF
 
@@ -29,14 +38,12 @@ static void reset_tile(unsigned const tileId)
 /* Reboots XMOS device by writing to the PLL config register
  * Note - resetting is per *node* not tile
  */
-void device_reboot(void)
+void device_internal_reboot(void)
 {
     unsigned int localTileId = get_local_tile_id();
     unsigned int tileId;
     unsigned int tileArrayLength;
     unsigned int localTileNum;
-
-    XUD_HAL_EnterMode_TristateDrivers();
 
     tileArrayLength = sizeof(tile)/sizeof(tileref);
 
@@ -71,13 +78,6 @@ void device_reboot(void)
     reset_tile(localTileId);
 
     while (1);
-}
-
-#else
-
-// Testing only - not a real reboot.
-void device_reboot(void)
-{
 }
 
 #endif

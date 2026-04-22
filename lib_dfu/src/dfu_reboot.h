@@ -31,5 +31,8 @@
 /* Reboot the device */
 void device_reboot(void);
 
+/* Weak user function */
+void dfu_user_pre_reboot(void);
+
 
 #endif /* DFU_REBOOT_H */
