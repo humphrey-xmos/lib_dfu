@@ -347,6 +347,12 @@ static struct dfu_cmd_response state_dnload_sync(enum dfu_cmd_request request, u
       response = error_condition(DFU_errUNKNOWN, 0);
 
     } else {
+      /* The interaction between the DFU state machine and the device flash state machine `dfu_sub_sm is primarily
+       * through the fifo back-pressure.
+       * The DFU will fill the fifo with one page of data, this will then trigger the flash operations through deferred action.
+       * The DFU will not move on to downloading the next page until the flash write is done which consumes the fifo data.
+       * This way we can achieve good performance by writing a full page at a time.
+       */
       if (dfufifo_is_page_ready()) {
         normal_transition(STATE_DFU_DOWNLOAD_BUSY);
         response = normal_transition(STATE_DFU_DOWNLOAD_SYNC);

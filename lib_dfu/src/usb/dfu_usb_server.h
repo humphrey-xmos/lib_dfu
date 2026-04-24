@@ -15,11 +15,11 @@
  * 
  * \param i The usb interface to use for connection to the transport.
  */
-#ifndef __XC__
-void dfu_usb_server(SERVER_INTERFACE(i_dfu, i));
-#else
+#if defined(__XC__)
 [[distributable]]
 void dfu_usb_server(server interface i_dfu i);
+#else
+void dfu_usb_server(SERVER_INTERFACE(i_dfu, i));
 #endif
 
 #endif // DFU_USB_SERVER_H

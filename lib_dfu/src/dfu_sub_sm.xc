@@ -92,6 +92,9 @@ static enum dfu_status sub_sm_erase_sectors(int32_t duration_ms)
   return status;
 }
 
+/* Interaction between the flash state machine and the DFU state machine
+ * is managed through the fifo back-pressure mechanism.
+ * When we consume the buffered data and write it to flash, we free up space in the fifo for more data. */
 static enum dfu_status sub_sm_flash_write_page(struct fifo &dfu_fifo, uint8_t *page, int32_t page_size_bytes)
 {  
   enum dfu_status status = DFU_errTARGET;
@@ -162,7 +165,7 @@ struct dfu_sub_response sub_sm_process_dnload(struct fifo &dfu_fifo)
     // TODO - support time bound repeated erase cycle.
     case DNLOAD_ERASING:
       poll_timeout = POLL_TIMEOUT_DNLOAD_ERASE_MSEC;
-      enum dfu_status status = sub_sm_erase_sectors((DFU_FLASH_ERASE_CYCLE_MSEC - 5));
+      enum dfu_status status = sub_sm_erase_sectors(DFU_FLASH_ERASE_CYCLE_MSEC);
 
       if (status == DFU_OK) {
         // sector erase completed, move on to page write

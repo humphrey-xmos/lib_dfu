@@ -102,7 +102,7 @@
 #endif
 
 /**
- * Poll timeout for DFU download entry in milliseconds, time taken to find the upgrade image, if it exists and erase the first sector.
+ * Poll timeout for DFU download entry in milliseconds, time taken to find the upgrade image, if it exists, and erase the first sector.
  * 
  * The first sector erase can often take significantly longer than subsequent erases, as it may require additional setup such as checking whether an upgrade image exists and its size.
  * 
@@ -112,20 +112,27 @@
 #define POLL_TIMEOUT_DNLOAD_ENTRY_MSEC 150
 #endif
 
-/* The cycle time for the flash erase operation in milliseconds. Allows repeated erase operations to be performed within this time frame. */
-#ifndef DFU_FLASH_ERASE_CYCLE_MSEC
-#define DFU_FLASH_ERASE_CYCLE_MSEC 500
-#endif
-
 /**
- * Poll timeout for DFU download erase in milliseconds, time given to erase a number of sectors of the upgrade image, when it exists.
+ * Poll timeout for DFU download erase in milliseconds, time given to erase a number of sectors to prepare for the upgrade image.
  * 
  * The intent is that the device should attempt to erase a number of sectors within this time.
+ * 
+ * This value is that reported to the host to hold-off further requests until a block of erasing is done.
+ * DFU_FLASH_ERASE_CYCLE_MSEC is the time duration the device will use which must be shorter than this value to ensure the host does not timeout.
  * 
  * Values shorter than the actual time taken by the flash chip to erase one sector may cause the host to timeout or cause clock-stretching if using I2C.
  */
 #ifndef POLL_TIMEOUT_DNLOAD_ERASE_MSEC
-#define POLL_TIMEOUT_DNLOAD_ERASE_MSEC (DFU_FLASH_ERASE_CYCLE_MSEC)
+#define POLL_TIMEOUT_DNLOAD_ERASE_MSEC 500
+#endif
+
+/**
+ * The cycle time for the flash erase operation in milliseconds. Allows repeated erase operations to be performed within this time frame.
+ * 
+ * The margin between this value and POLL_TIMEOUT_DNLOAD_ERASE_MSEC should be sufficient to allow the device flash preparation operations at various stages of the process.
+ */
+#ifndef DFU_FLASH_ERASE_CYCLE_MSEC
+#define DFU_FLASH_ERASE_CYCLE_MSEC 450
 #endif
 
 /**
