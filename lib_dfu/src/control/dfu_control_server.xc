@@ -33,6 +33,18 @@
 
 // TODO - lib_device_control should build this code in an example, or test.
 
+#if (DFU_ENABLE == 1)
+/*
+ * A short delay before rebooting from DFU mode.
+ */
+#define DELAY_CONTROL_BEFORE_REBOOT_FROM_DFU_MS   50
+#else
+
+/* TESTING */
+#define DELAY_CONTROL_BEFORE_REBOOT_FROM_DFU_MS   1
+
+#endif
+
 static timer dfu_timer;
 static unsigned dfu_time;
 static enum dfu_cmd_request dfu_deferred_action = 0;
@@ -192,16 +204,7 @@ void dfu_control_server(server interface control dfu_control_interface) {
 
                 if (dfu_deferred_action == DFU_DEFERRED_ACTION_REBOOT) {
                     dfu_deferred_action = 0;
-                    timer tmr;
-                    unsigned now;
-                    tmr :> now;
-                    debug_printf("Rebooting out of DFU mode\n");
-                    unsigned then;
-                    tmr when timerafter(now + (DELAY_BEFORE_REBOOT_FROM_DFU_MS * XS1_TIMER_KHZ)) :> then;
-                    // To silence shadow variable warning.
-                    (void)then;
-                    // TODO - should this be deferred?
-                    device_reboot();
+                    dfu_reboot(DELAY_CONTROL_BEFORE_REBOOT_FROM_DFU_MS);
                     // Note: testing will fall through to app idle without reboot, which is fine.
 
                 } else {

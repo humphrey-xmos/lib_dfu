@@ -27,6 +27,21 @@
 
 #define _BOOT_DFU_MODE_FLAG (0x11042011)
 
+/* Windows core USB/device driver stack may not like device coming off bus for
+ * a very short period of less than 500ms. Enforce at least 500ms by stalling.
+ * This may not have the desired effect depending on whether 'off the bus'
+ * requires device terminations disabled (PHY off). In that case we would be
+ * better off doing the reboot to DFU and then delaying PHY initialisation
+ * instead. Suggest revisiting.
+ */
+#define DELAY_USB_BEFORE_REBOOT_TO_DFU_MS     500
+
+/* Similarly to the delay before reboot to DFU mode, this delay is meant to
+ * avoid shocking the Windows software stack. Suggest revisiting to establish
+ * if 50 or 500 is needed.
+ */
+#define DELAY_USB_BEFORE_REBOOT_FROM_DFU_MS   500
+
 /* Store Flag to fixed address */
 static void SetDFUFlag(unsigned x)
 {
@@ -60,14 +75,6 @@ void dfu_set_mode_active()
 void dfu_set_mode_inactive()
 {
     DFU_mode_active = 0;
-}
-
-void DFUDelay(unsigned d)
-{
-    timer tmr;
-    unsigned s;
-    tmr :> s;
-    tmr when timerafter(s + d) :> void;
 }
 
 int dfu_check_init_state()
@@ -149,8 +156,7 @@ int dfu_process_reset_state(client interface i_dfu i)
 
     if (result.deferred_request == DFU_DEFERRED_ACTION_REBOOT)
     {
-        DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * XS1_TIMER_KHZ);
-        device_reboot();
+        dfu_reboot(DELAY_USB_BEFORE_REBOOT_FROM_DFU_MS);
     }
 
     return inDFU;
@@ -202,14 +208,11 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
   	    // If device reset requested, handle after command acknowledgement
   	    if (result.deferred_request == DFU_DEFERRED_ACTION_REBOOT_TO_DFU)
   	    {
-            DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * XS1_TIMER_KHZ);
-            device_reboot();
+            dfu_reboot(DELAY_USB_BEFORE_REBOOT_TO_DFU_MS);
         }
         else if (result.deferred_request == DFU_DEFERRED_ACTION_REBOOT)
         {
-            // TODO - fix: this should be DELAY_BEFORE_REBOOT_FROM_DFU_MS, may affect dfu_control_server
-            DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * XS1_TIMER_KHZ);
-            device_reboot();
+            dfu_reboot(DELAY_USB_BEFORE_REBOOT_FROM_DFU_MS);
         }
     } else {
         returnVal = XUD_RES_ERR;

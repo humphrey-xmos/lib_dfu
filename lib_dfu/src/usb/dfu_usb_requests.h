@@ -12,9 +12,6 @@
 #include "xud_device.h"
 #include "dfu_interface.h"
 
-/* Helper function for C */
-void DFUDelay(unsigned d);
-
 /**
  * \defgroup lib_dfu_api_usb USB API
  * \{
@@ -88,9 +85,10 @@ int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, REFERENCE_PARAM(US
  */
 void dfu_usb_set_configured_state(void);
 
-/** Handle standard SET_CONFIGURATION request
+/** Handle clearing of the USB configured state
  *
- * Informs DFU layer of USB device configured state.
+ * Informs the DFU layer that the USB device is no longer configured,
+ * for example after SET_CONFIGURATION(0) or equivalent de-configuration.
  */
 void dfu_usb_clear_configured_state(void);
 

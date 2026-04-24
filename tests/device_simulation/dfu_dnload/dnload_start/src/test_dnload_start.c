@@ -17,6 +17,13 @@ static int state_erasing = 0;
 static int state_writing = 0;
 static int erase_requested_size = 0;
 
+void setUp(void) {
+  state_erasing = 0;
+  state_writing = 0;
+}
+
+void tearDown(void) {}
+
 enum flash_status flash_init() {
   flash_open = 1;
   return DFU_FLASH_OK;

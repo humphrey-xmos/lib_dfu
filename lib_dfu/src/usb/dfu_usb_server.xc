@@ -24,24 +24,41 @@ void dfu_usb_server(server interface i_dfu i)
 
                 unsigned char data_local[DFU_TRANSFER_SIZE_BYTES];
 
-                    /* Split reads and writes */
+                /* Split reads and writes */
                 if ((request.request == DFU_UPLOAD) || (request.request == DFU_GETSTATUS) || (request.request == DFU_GETSTATE))
-                    {
-                        dfu = dfu_request_with_arguments(request.request, data_local, request.length, null);
-                        memcpy(data_buffer, data_local, DFU_TRANSFER_SIZE_BYTES);
+                {
+                    dfu = dfu_request_with_arguments(request.request, data_local, request.length, null);
+                    /* Worst-case buffer copy */
+                    memcpy(data_buffer, data_local, DFU_TRANSFER_SIZE_BYTES);
                 }
                 else if (request.request == XMOS_DFU_GETPROFILE)
                 {
                     // TODO
-                    } else {
-                    int32_t request_value = (int32_t)request.value;
+                    dfu.status = DFU_API_BAD_PARAM;
+                    dfu.return_data_len = 0;
+                    dfu.deferred_request = 0;
+                }
+                else
+                {
+                    if (data_buffer_length > DFU_TRANSFER_SIZE_BYTES) {
+                        dfu.status = DFU_API_BAD_PARAM;
+                        dfu.return_data_len = 0;
+                        dfu.deferred_request = 0;
+                    }
+                    else
+                    {
+                        int32_t request_value = (int32_t)request.value;
                         memcpy(data_local, data_buffer, data_buffer_length);
-                    dfu = dfu_request_with_arguments(request.request, data_local, data_buffer_length, request_value);
+                        dfu = dfu_request_with_arguments(request.request, data_local, data_buffer_length, request_value);
+                    }
                 }
 
-  	            if ((dfu.deferred_request == DFU_DEFERRED_ACTION_REBOOT_TO_DFU) || (dfu.deferred_request == DFU_DEFERRED_ACTION_REBOOT)) {
+  	            if ((dfu.deferred_request == DFU_DEFERRED_ACTION_REBOOT_TO_DFU) || (dfu.deferred_request == DFU_DEFERRED_ACTION_REBOOT))
+                {
                     /* This is USB DFU mode entry mechanism, delegate to USB request handling. */
-                } else if (dfu.deferred_request != 0) {
+                }
+                else if (dfu.deferred_request != 0)
+                {
                     dfu_request_with_arguments(dfu.deferred_request, null, 0, null);
                     dfu.deferred_request = 0;
                 }

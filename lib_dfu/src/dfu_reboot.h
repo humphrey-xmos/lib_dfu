@@ -6,32 +6,22 @@
 
 #include "dfu.h"
 
-/* Windows core USB/device driver stack may not like device coming off bus for
- * a very short period of less than 500ms. Enforce at least 500ms by stalling.
- * This may not have the desired effect depending on whether 'off the bus'
- * requires device terminations disabled (PHY off). In that case we would be
- * better off doing the reboot to DFU and then delaying PHY initialisation
- * instead. Suggest revisiting.
+/** Reboot the device
+ * 
+ * This function reboots the device by writing to the PLL config register.
+ * This will call dfu_user_pre_reboot() before rebooting, which allows the user to
+ * perform any necessary cleanup or preparation before the device reboots.
+ * 
+ * \param delay_ms The delay in milliseconds before the reboot occurs.
  */
-#define DELAY_BEFORE_REBOOT_TO_DFU_MS     500
+void dfu_reboot(int32_t delay_ms);
 
-#if (DFU_ENABLE == 1)
-/* Similarly to the delay before reboot to DFU mode, this delay is meant to
- * avoid shocking the Windows software stack. Suggest revisiting to establish
- * if 50 or 500 is needed.
+/** Function to notify user's application that a reboot is about to occur.
+ * 
+ * This is called from dfu_reboot() before the device is rebooted, and can be used to perform any necessary cleanup or preparation before the reboot occurs.
+ * 
+ * The default weak implementation does nothing, but the user can override this function with their own implementation if desired.
  */
-#define DELAY_BEFORE_REBOOT_FROM_DFU_MS   50
-#else
-
-/* TESTING */
-#define DELAY_BEFORE_REBOOT_FROM_DFU_MS   1
-
-#endif
-
-/* Reboot the device */
-void device_reboot(void);
-
-/* Weak user function */
 void dfu_user_pre_reboot(void);
 
 

@@ -6,6 +6,14 @@
 
 #include "dfu.h"
 
+void dfu_delay_raw(unsigned d)
+{
+    timer tmr;
+    unsigned s;
+    tmr :> s;
+    tmr when timerafter(s + d) :> void;
+}
+
 #if !defined(__XS2A__)
 #include <xs1.h>
 // TODO should be properly in HAL
@@ -44,7 +52,7 @@ void device_internal_reboot(void)
     unsigned int tileId;
     unsigned int tileArrayLength;
     unsigned int localTileNum;
-
+    
     tileArrayLength = sizeof(tile)/sizeof(tileref);
 
     /* Note - we could be in trouble if this doesn't return 0/1 since

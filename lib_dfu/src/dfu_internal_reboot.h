@@ -4,6 +4,11 @@
 #ifndef DFU_INTERNAL_REBOOT_H
 #define DFU_INTERNAL_REBOOT_H
 
+#include <stdint.h>
+
+/* Helper function for C */
+void dfu_delay_raw(unsigned d);
+
 /* Reboot the device */
 void device_internal_reboot(void);
 

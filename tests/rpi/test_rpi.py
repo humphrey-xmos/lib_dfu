@@ -60,14 +60,16 @@ def revert_factory_and_check(host_app, expected):
 
     detach_and_check(host_app, expected)
 
-'''
-This is a manual test that can be run on the Raspberry Pi.
-It requires the dfu_i2c host app, and the suffix generator to be built and available in the expected locations.
-It also requires the i2c_update.bin test file to be present.
-'''
+
 def test_rpi():
+    '''
+    This is a manual test that can be run on the Raspberry Pi.
+    It requires the dfu_i2c host app, and the suffix generator to be built and available in the expected locations.
+    It also requires the i2c_update.bin test file to be present.
+    '''
+
     # Check for dfu_utility
-    host_file_path =  pathlib.Path(__file__).parent / "../../host/dfu_i2c/bin/dfu_i2c"
+    host_file_path = pathlib.Path(__file__).parent / "../../host/dfu_i2c/bin/dfu_i2c"
     assert host_file_path.exists(), f"Host file path {host_file_path} does not exist"
 
     # Check that the test file exists

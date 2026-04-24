@@ -38,7 +38,7 @@ int main(void)
         if (erase_status == DFU_FLASH_OK) {
             printstr("Flash cleared.\n");
         } else {
-            printstr("Flash Error!.\n");
+            printstr("Flash Error.\n");
         }
         flash_deinit();
         printstr("Closed flash.\n");

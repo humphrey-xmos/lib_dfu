@@ -613,10 +613,17 @@ Data Structures/Types
 API Functions
 =============
 
-<dfh.h>
+<dfu.h>
 -------
 
 .. doxygengroup:: lib_dfu_api
+
+<dfu_reboot.h>
+--------------
+
+.. doxygenfunction:: dfu_reboot
+
+.. doxygenfunction:: dfu_user_pre_reboot
 
 <dfu_usb_server.h>
 ------------------
