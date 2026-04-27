@@ -46,7 +46,7 @@ enum flash_status flash_erase_sector_async(int32_t erase_size) {
     state_erasing = 1;
 
   } else {
-    // Never complete erase as these test only check the starting process.
+    // Never complete erase as these tests only check the starting process.
   }
   return DFU_FLASH_BUSY;
 }
