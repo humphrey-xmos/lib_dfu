@@ -127,7 +127,7 @@ For USB transports, there is the USB ``lib_xud`` thread, which handles the USB c
 the ``endpoint0`` thread, which are outlined in :numref:`dfu_threads_usb`.
 The ``endpoint0`` thread receives the DFU commands from the host and sends them to the DFU task. Due to the
 use of the ``i_dfu`` interface, the DFU task can be ``distributable`` and thus called directly from the ``endpoint0`` thread,
-so no additional threads are typically needed for the DFU task. However, if XUD is run on tile[1], DFU will require its own
+so no additional threads are typically needed for the DFU task. However, if XUD is not run on tile[0], DFU will require its own
 thread on tile[0].
 
 .. figure:: ../images/lib_dfu_threads_usb.png

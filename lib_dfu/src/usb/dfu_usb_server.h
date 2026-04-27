@@ -17,9 +17,7 @@
  */
 #if defined(__XC__)
 [[distributable]]
-void dfu_usb_server(server interface i_dfu i);
-#else
-void dfu_usb_server(SERVER_INTERFACE(i_dfu, i));
 #endif
+void dfu_usb_server(SERVER_INTERFACE(i_dfu, i));
 
 #endif // DFU_USB_SERVER_H

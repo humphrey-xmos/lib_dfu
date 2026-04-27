@@ -531,8 +531,6 @@ struct dfu_cmd_response dfu_request_with_arguments(enum dfu_cmd_request request,
       if (request == DFU_DNLOAD) {
         response = state_download_idle(block, block_size_bytes, value);
 
-      // TODO - add support for abort.
-
       } else if ((request != DFU_GETSTATUS) && (request != DFU_GETSTATE) && (request != XMOS_DFU_BUS_RESET)) {
         response = error_condition(DFU_errSTALLED_PKT, request);
       }

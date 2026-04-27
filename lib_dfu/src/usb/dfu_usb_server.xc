@@ -31,13 +31,6 @@ void dfu_usb_server(server interface i_dfu i)
                     /* Worst-case buffer copy */
                     memcpy(data_buffer, data_local, DFU_TRANSFER_SIZE_BYTES);
                 }
-                else if (request.request == XMOS_DFU_GETPROFILE)
-                {
-                    // TODO
-                    dfu.status = DFU_API_BAD_PARAM;
-                    dfu.return_data_len = 0;
-                    dfu.deferred_request = 0;
-                }
                 else
                 {
                     if (data_buffer_length > DFU_TRANSFER_SIZE_BYTES) {

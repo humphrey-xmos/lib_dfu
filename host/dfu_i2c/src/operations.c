@@ -308,7 +308,6 @@ static int upload_file(FILE *handle, unsigned block_size)
 
         printf("upload total: %u bytes\n", (block_count * block_size) + extra);
       }
-      // TODO - merge this with write above
       byte_count += extra;
 
       if (fwrite(sector_buffer, 1, byte_count, handle) != byte_count) {
@@ -341,7 +340,7 @@ int read_upload(const char *file_name, unsigned block_size)
     return APP_BAD_COMMS;
   }
 
-  // TODO - create temp file to write during upload process
+  // TODO - create temp file to write during upload process, to stop leaving empty files if error during upload.
   FILE *handle = fopen(file_name, "wb");
   if (handle == NULL) {
     PRINT_ERROR("Problem opening file %s\n", file_name);

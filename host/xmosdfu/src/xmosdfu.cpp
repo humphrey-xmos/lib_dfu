@@ -284,7 +284,6 @@ int write_dfu_image(char *file)
     for (int i = 0; i < num_blocks; i++)
     {
         memset(block_data, 0x0, block_size);
-        // TODO - make use of return values
         size_t read = fread(block_data, 1, block_size, inFile);
         if (read != (size_t)block_size)
         {
@@ -549,8 +548,6 @@ static void parse_device_vid_pid(const char *str)
         match_vendor_dfu = parse_match_value(comma);
 		match_product_dfu = parse_match_value(colon);
 	}
-
-    printf("runtime vid 0x%04x, pid 0x%04x. DFU vid 0x%04x, pid 0x%04x\n", match_vendor, match_product, match_vendor_dfu, match_product_dfu);
 }
 
 int main(int argc, char **argv)
@@ -651,7 +648,6 @@ int main(int argc, char **argv)
         libusb_release_interface(devh, XMOS_DFU_IF);
         libusb_close(devh);
 
-        // TODO - improve turn-around timing
         printf("Waiting for device to restart and enter DFU mode...\n");
 
         // Wait for device to enter dfu mode and restart
@@ -695,7 +691,6 @@ int main(int argc, char **argv)
     int return_code = 0;
     if (download)
     {
-        // TODO - recover from error
         int write = write_dfu_image(firmware_filename);
         if (write < 0)
         {
@@ -710,7 +705,6 @@ int main(int argc, char **argv)
     }
     else if (upload)
     {
-        // TODO - recover from error
         int read = read_dfu_image(firmware_filename);
         if (read < 0)
         {

@@ -102,9 +102,6 @@ static void bus_reset() {
 
 void test_dnload_start(void) {
   uint8_t block[DFU_TRANSFER_SIZE_BYTES];
-  // TODO - this should migrate to image size from first page downloaded,
-  // but for now just check the expected value is passed to flash_erase_sector_async
-  // int32_t expected = FLASH_MAX_UPGRADE_SIZE;
 
   get_state_and_check(STATE_APP_IDLE);
 

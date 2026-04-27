@@ -31,8 +31,6 @@
 #error "Transport not supported"
 #endif
 
-// TODO - lib_device_control should build this code in an example, or test.
-
 #if (DFU_ENABLE == 1)
 /*
  * A short delay before rebooting from DFU mode.
@@ -171,8 +169,6 @@ void dfu_control_server(server interface control dfu_control_interface) {
                     if (dfu_deferred_action != 0) {
                         debug_printf("DFU read command: deferred action %d\n", dfu_deferred_action);
                     }
-                    // TODO - get at block_num here.
-                    // header.block_num = dfu_response.block_num;
                     memcpy(payload, &header, sizeof(header));
 
                     size_t payload_for_dfu = (payload_len - sizeof(header));

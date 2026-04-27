@@ -28,7 +28,7 @@
 #define _BOOT_DFU_MODE_FLAG (0x11042011)
 
 /* Windows core USB/device driver stack may not like device coming off bus for
- * a very short period of less than 500ms. Enforce at least 500ms by stalling.
+ * a very short period of less than 500ms. Enforce at least 500ms by waiting.
  * This may not have the desired effect depending on whether 'off the bus'
  * requires device terminations disabled (PHY off). In that case we would be
  * better off doing the reboot to DFU and then delaying PHY initialisation

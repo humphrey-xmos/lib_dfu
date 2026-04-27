@@ -140,14 +140,4 @@ struct dfu_profile_data {
     unsigned cmd;
 };
 
-/* TODO - lib_xua types, remove in time */
-#define _DFU_TRANSFER_SIZE_BYTES (64)   // bMaxPacketSize0 in DFU device descriptor
-// #define _DFU_TRANSFER_SIZE_WORDS (_DFU_TRANSFER_SIZE_BYTES/4)
-#define _FLASH_PAGE_SIZE_BYTES    (256)
-#define _NUM_DFU_PAGES_PER_FLASH_PAGE (_FLASH_PAGE_SIZE_BYTES/_DFU_TRANSFER_SIZE_BYTES)
-
-#if (_FLASH_PAGE_SIZE_BYTES % _DFU_TRANSFER_SIZE_BYTES)
-#error _FLASH_PAGE_SIZE_BYTES should be a multiple of _DFU_TRANSFER_SIZE_BYTES
-#endif
-
 #endif

@@ -1,6 +1,15 @@
 lib_dfu change log
 ==================
 
+UNRELEASED
+----------
+
+  * CHANGED:  ``lib_dfu`` now fully supports both USB and I2C DFU devices.
+  * CHANGED:  Flash erase changed from one call per transfer to many calls per
+    DFU_FLASH_ERASE_CYCLE_MSEC duration, to reduce communications chatter.
+  * CHANGED:  Reboot handling in control server to allow deferred reboot.
+  * CHANGED:  xmosdfu: improved reliability and robustness.
+
 2.0.0
 -----
 

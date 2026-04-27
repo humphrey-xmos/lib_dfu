@@ -111,7 +111,6 @@ static enum dfu_status sub_sm_flash_write_page(struct fifo &dfu_fifo, uint8_t *p
   }
 
   if (remaining_bytes != 0) {
-    // TODO add fifo function to access pointer to memory to avoid this copy, if performance of this is an issue.
     if (fifo_block_dequeue(dfu_fifo, page, remaining_bytes) == FIFO_OK) {
       memset(&page[remaining_bytes], 0xFF, (page_size_bytes - remaining_bytes));
       t_profiler :> t_profiler_start;
@@ -162,7 +161,6 @@ struct dfu_sub_response sub_sm_process_dnload(struct fifo &dfu_fifo)
 
       break;
 
-    // TODO - support time bound repeated erase cycle.
     case DNLOAD_ERASING:
       poll_timeout = POLL_TIMEOUT_DNLOAD_ERASE_MSEC;
       enum dfu_status status = sub_sm_erase_sectors(DFU_FLASH_ERASE_CYCLE_MSEC);
