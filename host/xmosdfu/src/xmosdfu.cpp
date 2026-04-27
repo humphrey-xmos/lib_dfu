@@ -191,10 +191,13 @@ int dfu_getStatus(int interface, unsigned char *status, unsigned int *timeout,
     unsigned int data[2] = {0};
     int ret = libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATUS, 0, (uint16_t)interface, (unsigned char *)data, 6, 0U);
 
-    *status = data[0] & 0xff;
-    *timeout = (data[0] >> 8) & 0xffffff;
-    *nextState = data[1] & 0xff;
-    *strIndex = (data[1] >> 8) & 0xff;
+    if (ret == 6)
+    {
+        *status = data[0] & 0xff;
+        *timeout = (data[0] >> 8) & 0xffffff;
+        *nextState = data[1] & 0xff;
+        *strIndex = (data[1] >> 8) & 0xff;
+    }
     return ret;
 }
 
