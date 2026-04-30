@@ -17,6 +17,7 @@
 
 #include "control.h"
 #include "control_transport_shared.h"
+#include "dfu_reboot.h"
 
 #if CONTROL_USE_I2C
 #define DFU_CONTROL_PAYLOAD_BYTES (I2C_DATA_MAX_BYTES)
@@ -30,7 +31,17 @@
 #error "Transport not supported"
 #endif
 
-// TODO - lib_device_control should build this code in an example, or test.
+#if (DFU_ENABLE == 1)
+/*
+ * A short delay before rebooting from DFU mode.
+ */
+#define DELAY_CONTROL_BEFORE_REBOOT_FROM_DFU_MS   50
+#else
+
+/* TESTING */
+#define DELAY_CONTROL_BEFORE_REBOOT_FROM_DFU_MS   1
+
+#endif
 
 static timer dfu_timer;
 static unsigned dfu_time;
@@ -110,6 +121,7 @@ void dfu_control_server(server interface control dfu_control_interface) {
 
                 if (dfu_response.deferred_request == DFU_DEFERRED_ACTION_REBOOT_TO_DFU) {
                     /* This is USB DFU mode entry mechanism, for non-USB ignore. */
+
                 } else if (dfu_response.deferred_request != 0) {
                     dfu_deferred_action = dfu_response.deferred_request;
                 }
@@ -157,8 +169,6 @@ void dfu_control_server(server interface control dfu_control_interface) {
                     if (dfu_deferred_action != 0) {
                         debug_printf("DFU read command: deferred action %d\n", dfu_deferred_action);
                     }
-                    // TODO - get at block_num here.
-                    // header.block_num = dfu_response.block_num;
                     memcpy(payload, &header, sizeof(header));
 
                     size_t payload_for_dfu = (payload_len - sizeof(header));
@@ -188,9 +198,16 @@ void dfu_control_server(server interface control dfu_control_interface) {
 
             case (dfu_deferred_action != 0) => dfu_timer when timerafter(dfu_time) :> void: {
 
-                debug_printf("deferred action: %d\n", dfu_deferred_action);
-                dfu_request_with_arguments(dfu_deferred_action, null, 0, null);
-                dfu_deferred_action = 0;
+                if (dfu_deferred_action == DFU_DEFERRED_ACTION_REBOOT) {
+                    dfu_deferred_action = 0;
+                    dfu_reboot(DELAY_CONTROL_BEFORE_REBOOT_FROM_DFU_MS);
+                    // Note: testing will fall through to app idle without reboot, which is fine.
+
+                } else {
+                    debug_printf("deferred action: %d\n", dfu_deferred_action);
+                    dfu_request_with_arguments(dfu_deferred_action, null, 0, null);
+                    dfu_deferred_action = 0;
+                }
                 break;
             }
 

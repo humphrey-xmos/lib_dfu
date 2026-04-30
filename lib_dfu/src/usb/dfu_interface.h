@@ -1,8 +1,8 @@
 // Copyright 2015-2026 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-#ifndef __DFU_INTERFACE_H__
-#define __DFU_INTERFACE_H__
+#ifndef DFU_INTERFACE_H
+#define DFU_INTERFACE_H
 
 #if __XC__
 
@@ -19,7 +19,7 @@ struct dfu_request_params
 
 interface i_dfu
 {
-    struct dfu_cmd_response HandleDfuRequest(struct dfu_request_params request, unsigned data_buffer[], unsigned data_buffer_length);
+    struct dfu_cmd_response handle_dfu_request(struct dfu_request_params request, unsigned data_buffer[], unsigned data_buffer_length);
     void finish();
 };
 

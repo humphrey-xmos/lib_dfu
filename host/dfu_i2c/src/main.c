@@ -39,7 +39,6 @@ int main(int argc, char **argv)
       if (hal_connect(options.device_id) == APP_OK) {
         ret = write_upgrade(inputs, options.block_size);
         if (ret == 0) {
-          // TODO - should we always reboot after write?
           hal_reboot();
         }
 

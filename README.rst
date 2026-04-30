@@ -37,7 +37,6 @@ Known issues
   this is normal on small packages that do not have all the pins bonded out.
 - The ``lib_device_control`` client handling currently consumes an additional thread as it is not distributable.
 - For DFU over I2C the bus speed of up to 100kbps is supported. This is also supported with no clock stretching for all commands except ``upload``.
-- For DFU over I2C, when exiting from DFU mode, the device reboots which interrupts the host communications, the host reports an error, but this does not affect the result.
 - DFU_ABORT request is supported in upload but not in download.
 
 ****************

@@ -127,7 +127,8 @@ For USB transports, there is the USB ``lib_xud`` thread, which handles the USB c
 the ``endpoint0`` thread, which are outlined in :numref:`dfu_threads_usb`.
 The ``endpoint0`` thread receives the DFU commands from the host and sends them to the DFU task. Due to the
 use of the ``i_dfu`` interface, the DFU task can be ``distributable`` and thus called directly from the ``endpoint0`` thread,
-so no additional threads are needed for the DFU task.
+so no additional threads are typically needed for the DFU task. However, if XUD is not run on tile[0], DFU will require its own
+thread on tile[0].
 
 .. figure:: ../images/lib_dfu_threads_usb.png
    :width: 80%
@@ -214,7 +215,13 @@ The DFU operations process is as follows:
 2. The host sends a detach command to the device to switch it to DFU mode.
 3. The device reboots into DFU mode and enumerates with the DFU descriptors.
 4. The host sends DFU download or upload commands to write or read the firmware image to or from the device.
-5. The host sends a bus-reset to the device to switch it back to runtime mode.
+5. The host sends a detach command to the device to switch it back to runtime mode.
+
+.. note::
+   For non-USB transports, the device simply switches to DFU mode without rebooting, and the host can determine the mode switch by querying the device for its descriptors.
+
+.. note::
+   To return to runtime mode, the host typically sends a detach command to the device. A bus-reset is supported by the device but Windows hosts do not support sending a bus reset over USB when using the WINUSB driver.
 
 XCORE Boot Process
 ------------------
@@ -307,22 +314,26 @@ Building the host applications
 
 This section assumes that the host compiler is installed and in the path, for details per host OS please see `Host dependencies`_.
 
-For Linux and Mac hosts, the host app can be built from a command terminal with the commands as shown:
+.. tab:: Linux and Mac hosts
 
-.. code-block:: console
+   For Linux and Mac hosts, the host app can be built from a command terminal with the commands as shown:
 
-   cd lib_dfu/host
-   cmake -G "Unix Makefiles" -B build
-   xmake -j -C build
+   .. code-block:: console
 
-For Windows hosts the process is the same except the Ninja generator is recommended to be used with CMake and the executable will have a ``.exe`` extension.
-The commands as shown:
+      cd lib_dfu/host
+      cmake -G "Unix Makefiles" -B build
+      xmake -j -C build
 
-.. code-block:: console
+.. tab:: Windows hosts
 
-   cd lib_dfu/host
-   cmake -G "Ninja" -B build
-   cmake --build build
+   For Windows hosts the process is the same except the Ninja generator is recommended to be used with CMake and the executable will have a ``.exe`` extension.
+   The commands as shown:
+
+   .. code-block:: console
+
+      cd lib_dfu\host
+      cmake -G "Ninja" -B build
+      cmake --build build
 
 The built host application executable will be found in the ``bin`` subdirectory under each of the host directories.
 
@@ -599,10 +610,35 @@ Data Structures/Types
 .. doxygenstruct:: dfu_cmd_response
    :members:
 
-Functions
-=========
+API Functions
+=============
+
+<dfu.h>
+-------
 
 .. doxygengroup:: lib_dfu_api
+
+<dfu_reboot.h>
+--------------
+
+.. doxygenfunction:: dfu_reboot
+
+.. doxygenfunction:: dfu_user_pre_reboot
+
+<dfu_usb_server.h>
+------------------
+
+.. doxygenfunction:: dfu_usb_server
+
+<dfu_usb_requests.h>
+--------------------
+
+.. doxygengroup:: lib_dfu_api_usb
+
+<dfu_control_server.h>
+----------------------
+
+.. doxygengroup:: lib_dfu_api_control
 
 DFU Configuration Options
 =========================

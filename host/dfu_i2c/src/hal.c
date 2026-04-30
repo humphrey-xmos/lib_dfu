@@ -15,7 +15,7 @@
 extern bool quiet;
 extern bool verbose;
 
-#define RESET_TIMEOUT_MSEC 500
+#define RESET_TIMEOUT_MSEC 1000
 
 static uint8_t buffer[256];
 

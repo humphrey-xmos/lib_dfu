@@ -20,6 +20,7 @@ loop until image is complete: n from 1 to N-1
 end
 
 H -> D : DFU_DNLOAD (BlockNum=N, Size=0)
+H -> D : DFU_GETSTATUS
 D --> H : State=dfuMANIFEST-SYNC
 
 loop until image is write complete

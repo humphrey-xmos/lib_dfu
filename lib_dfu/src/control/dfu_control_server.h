@@ -8,6 +8,11 @@
 
 #include "control.h"
 
+/**
+ * \defgroup lib_dfu_api_control Control API
+ * \{
+ */
+
 /** DFU control server function
  * 
  * This links the control library to the DFU library, allowing the device to receive DFU commands over any transport
@@ -18,5 +23,7 @@
  * \param dfu_control_interface The control interface to use for connection to the transport.
  */
 void dfu_control_server(SERVER_INTERFACE(control, dfu_control_interface));
+
+/** \} */
 
 #endif // DFU_CONTROL_SERVER_H

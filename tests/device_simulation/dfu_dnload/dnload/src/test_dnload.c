@@ -138,6 +138,7 @@ enum flash_status flash_write_page(const uint8_t page[], int32_t length) {
   }
   return DFU_FLASH_OK;
 }
+
 enum flash_status flash_finalise_write() {
   fl.address = 0;
   fl.state_writing = 0;
@@ -167,7 +168,7 @@ void layout_flash(int block_count, int block_size, int tail_size) {
   fl.partitions.f_start = fl.partitions.base + 4096;
   fl.partitions.f_size = 256;
   fl.partitions.u_start = fl.partitions.f_start + 4096;
-  fl.partitions.u_size = block_count * block_size + tail_size;
+  fl.partitions.u_size = (block_count * block_size) + tail_size;
   memset(fl.partitions.u_contents, 0, MAX_IMAGE_SIZE);
 
   debug_printf("%s partition: factory 0x%X (%d), upgrade 0x%X (%d)\n", labels, fl.partitions.f_start,
@@ -222,9 +223,13 @@ static void single_dnload_block(int32_t block_num, int32_t block_size, const uin
     ret = get_status(&deferred_request);
     TEST_ASSERT_EQUAL(DFU_OK, ret.status);
 
-    if (deferred_request != 0) {
-      response = dfu_request(deferred_request);
-      TEST_ASSERT_EQUAL(DFU_API_SUCCESS, response.status);
+    if (deferred_request && (deferred_request != DFU_DEFERRED_ACTION_REBOOT) && (deferred_request != DFU_DEFERRED_ACTION_REBOOT_TO_DFU)) {
+      struct dfu_cmd_response deferred_status = dfu_request(deferred_request);
+      if (DFU_API_SUCCESS != deferred_status.status) {
+        struct dfu_getstatus err = get_status(&deferred_request);
+        TEST_ASSERT_EQUAL_UINT8(STATE_DFU_ERROR, err.state);
+        TEST_ASSERT_EQUAL_UINT8(DFU_OK, err.status);
+      }
     }
     delay_microseconds(1);
   } while (ret.state == STATE_DFU_DOWNLOAD_BUSY);
@@ -245,9 +250,13 @@ static void dnload_zero(void) {
     ret = get_status(&deferred_request);
     TEST_ASSERT_EQUAL(DFU_OK, ret.status);
     
-    if (deferred_request != 0) {
-      response = dfu_request(deferred_request);
-      TEST_ASSERT_EQUAL(DFU_API_SUCCESS, response.status);
+    if (deferred_request && (deferred_request != DFU_DEFERRED_ACTION_REBOOT) && (deferred_request != DFU_DEFERRED_ACTION_REBOOT_TO_DFU)) {
+      struct dfu_cmd_response deferred_status = dfu_request(deferred_request);
+      if (DFU_API_SUCCESS != deferred_status.status) {
+        struct dfu_getstatus err = get_status(&deferred_request);
+        TEST_ASSERT_EQUAL_UINT8(STATE_DFU_ERROR, err.state);
+        TEST_ASSERT_EQUAL_UINT8(DFU_OK, err.status);
+      }
     }
     delay_microseconds(1);
   } while (ret.state != STATE_DFU_IDLE);
@@ -311,14 +320,14 @@ void dnload(const uint8_t images[MAX_IMAGE_SIZE], int32_t block_size, int32_t bl
   }
 }
 
-void verify(const uint8_t images[MAX_IMAGE_SIZE]) {
+void verify(const uint8_t images[MAX_IMAGE_SIZE], int length) {
   debug_printf("verify\n");
 
-  int cmp = memcmp(fl.partitions.u_contents, images, (size_t)fl.partitions.u_size);
+  int cmp = memcmp(fl.partitions.u_contents, images, (size_t)length);
   TEST_ASSERT_EQUAL(0, cmp);
 
   /* Page-by-page verification */
-  for (int i = 0; i < fl.partitions.u_size; i += 256) {
+  for (int i = 0; i < length; i += 256) {
     int address = fl.partitions.u_start + i;
     if (!fl.page_verified[address / 256]) {
       debug_printf("page not verified 0x%X\n", address);
@@ -347,7 +356,7 @@ void test_dnload(void) {
   detach();
   dnload((const uint8_t *)images, block_size, block_count, tail_size, repeats);
 
-  verify((const uint8_t *)images);
+  verify((const uint8_t *)images, fl.partitions.u_size);
   
   reboot();
   
@@ -372,7 +381,32 @@ void test_dnload_no_tail(void) {
   detach();
   dnload((const uint8_t *)images, block_size, block_count, tail_size, repeats);
 
-  verify((const uint8_t *)images);
+  verify((const uint8_t *)images, fl.partitions.u_size);
+  
+  reboot();
+  
+  TEST_ASSERT_FALSE(fl.flash_open);
+}
+
+void test_dnload_write_less_than_one_page(void) {
+  int block_size = 0;
+  int block_count = 0;
+  int tail_size = 0;
+  int repeats = 0;
+
+  block_size = 64;  // bytes
+  block_count = 1; // blocks
+  tail_size = 0;   // bytes, ideally less than block_size
+  repeats = 2;
+
+  layout_flash(((3 * 4096) / block_size), block_size, tail_size);
+
+  make_test_data(images, fl.partitions.u_size);
+
+  detach();
+  dnload((const uint8_t *)images, block_size, block_count, tail_size, repeats);
+
+  verify((const uint8_t *)images, ((block_size * block_count) + tail_size));
   
   reboot();
   

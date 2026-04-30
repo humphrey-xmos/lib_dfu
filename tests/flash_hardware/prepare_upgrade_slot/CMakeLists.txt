@@ -8,7 +8,6 @@ set(XMOS_SANDBOX_DIR       ${CMAKE_CURRENT_LIST_DIR}/../../../..)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../deps.cmake)
 
-# -march=xs3a -mcmodel=large ??
 set(COMPILER_FLAGS      -g
                         -Wno-xcore-fptrgroup
                         -fcmdline-buffer-bytes=256
@@ -23,9 +22,10 @@ set(COMPILER_FLAGS      -g
                         -Wfloat-equal
                         -Wsign-compare)
 
+set(APP_INCLUDES        src)
+
 # # add uut and test sources
 file(GLOB APP_C_SRCS CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_LIST_DIR} src/*)
-set(APP_INCLUDES        src)
 
 # Create config for each test
 file(GLOB tests RELATIVE ${CMAKE_CURRENT_LIST_DIR} CONFIGURE_DEPENDS src/test*.c)

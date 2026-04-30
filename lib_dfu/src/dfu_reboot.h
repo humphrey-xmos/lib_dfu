@@ -6,21 +6,23 @@
 
 #include "dfu.h"
 
-#if (DFU_ENABLE == 1)
-/* Similarly to the delay before reboot to DFU mode, this delay is meant to
- * avoid shocking the Windows software stack. Suggest revisiting to establish
- * if 50 or 500 is needed.
+/** Reboot the device
+ * 
+ * This function reboots the device by writing to the PLL config register.
+ * This will call dfu_user_pre_reboot() before rebooting, which allows the user to
+ * perform any necessary cleanup or preparation before the device reboots.
+ * 
+ * \param delay_ms The delay in milliseconds before the reboot occurs.
  */
-#define DELAY_BEFORE_REBOOT_FROM_DFU_MS   50
-#else
+void dfu_reboot(int32_t delay_ms);
 
-/* TESTING */
-#define DELAY_BEFORE_REBOOT_FROM_DFU_MS   1
-
-#endif
-
-/* Reboot the device */
-void device_reboot(void);
+/** Function to notify user's application that a reboot is about to occur.
+ * 
+ * This is called from dfu_reboot() before the device is rebooted, and can be used to perform any necessary cleanup or preparation before the reboot occurs.
+ * 
+ * The default weak implementation does nothing, but the user can override this function with their own implementation if desired.
+ */
+void dfu_user_pre_reboot(void);
 
 
 #endif /* DFU_REBOOT_H */
