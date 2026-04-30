@@ -22,6 +22,7 @@ flake8==7.3.0
 pytest==9.0.2
 pytest-xdist==3.8.0
 fabric==3.2.2
+pyyaml==6.0.3
 
 # Development dependencies
 #
@@ -29,11 +30,12 @@ fabric==3.2.2
 # installed in editable mode with '-e $PATH' (without the quotes).
 #
 # If python code in this repository depends on python code under development
-# in another repository, then an entry for that other respository should
+# in another repository, then an entry for that other repository should
 # appear in this list instead of the released dependencies list.
 #
 # If this repository uses the setup functionality (e.g., script entry points)
 # of its own setup.py file, then this list must include an entry for that
-# setup.py fi
+# setup.py file.
 
 -e git+ssh://git@github0.xmos.com/xmos-int/xtagctl.git@v3.0.0#egg=xtagctl
+-e git+ssh://git@github.com/xmos/hardware_test_tools.git@adddab1c3186496e6683e82c9fe1f509111392bf#egg=hardware_test_tools

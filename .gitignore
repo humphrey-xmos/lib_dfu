@@ -3,8 +3,8 @@
 
 .venv*/
 build*/
-_build/
-.build/
+_build*/
+.build*/
 
 obj/
 bin/

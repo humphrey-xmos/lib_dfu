@@ -1,0 +1,124 @@
+cmake_minimum_required(VERSION 3.21)
+include($ENV{XMOS_CMAKE_PATH}/xcommon.cmake)
+
+set(APP_INCLUDES src src/core src/extensions)
+set(XMOS_SANDBOX_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../..)
+include(${CMAKE_CURRENT_LIST_DIR}/../deps.cmake)
+
+set(APP_PCA_ENABLE ON)
+
+set(SW_USB_AUDIO_FLAGS ${EXTRA_BUILD_FLAGS} -O3
+                                            -report
+                                            -lquadflash
+                                            -g
+                                            -Wall
+                                            -fxscope
+                                            -DBOARD_SUPPORT_BOARD=XK_AUDIO_316_MC_AB
+                                            -DADAT_TX_USE_SHARED_BUFF=1)
+
+#
+# HiBW configs
+#
+# include(${CMAKE_CURRENT_LIST_DIR}/configs_hibw.cmake)
+
+project(app_usb_aud_xk_316_mc)
+set(APP_HW_TARGET xk-audio-316-mc.xn)
+
+
+# Build config naming scheme:
+#
+# Audio Class:   1 or 2
+# Sync Mode      A(sync) or S(ync)
+# I2S            M(aster) or S(lave)
+# Input          enabled: i (channelcount)
+# Output         enabled: o (channelcount)
+# MIDI           enabled: m, disabled: x
+# SPDIF in       enabled: s, disabled: x
+# SPDIF out      enabled: s, disabled: x
+# ADAT in        enabled: a, disabled: x
+# ADAT out       enabled: a, disabled: x
+# DSD out        enabled: d, disabled: x
+#
+# e.g. 2AMi10o10xxsxxx: Audio class 2.0, Asynchronous, I2S Master, input and output enabled (10 channels each), no MIDI, SPDIF output, no SPDIF input, no ADAT
+#
+# Additional tags may be added to the end of the build config name to indicate special features or configurations.
+
+#
+# Tested build configs
+#
+
+# # Audio Class 2, Async, I2S Master, 8xInput, 8xOutput
+# set(APP_COMPILER_FLAGS_2AMi8o8xxxxxx ${SW_USB_AUDIO_FLAGS})
+
+# Audio Class 2, Async, I2S Master, 10xInput, 10xOutput, S/PDIF Tx, S/PDIF Rx
+set(APP_COMPILER_FLAGS_2AMi10o10xssxxx ${SW_USB_AUDIO_FLAGS}   -DXUA_SPDIF_TX_EN=1
+                                                               -DXUA_SPDIF_RX_EN=1)
+
+# # Audio Class 2, Async, I2S Master, 16xInput, 16xOutput, ADAT Tx, ADAT Rx
+# set(APP_COMPILER_FLAGS_2AMi16o16xxxaax ${SW_USB_AUDIO_FLAGS}   -DXUA_ADAT_RX_EN=1
+#                                                                -DXUA_ADAT_TX_EN=1)
+
+# # Audio Class 2, Async, I2S Master, 16xInput, 16xOutput, ADAT Tx, ADAT Rx
+# # Note, limited to 96kHz sample rate
+# set(APP_COMPILER_FLAGS_2AMi18o18mssaax ${SW_USB_AUDIO_FLAGS}   -DMIDI=1
+#                                                                -DXUA_ADAT_RX_EN=1
+#                                                                -DXUA_ADAT_TX_EN=1
+#                                                                -DXUA_SPDIF_TX_EN=1
+#                                                                -DXUA_SPDIF_RX_EN=1
+#                                                                -DMAX_FREQ=96000)
+
+# Windows testing with the built-in driver relies on using product IDs that the Thesycon driver won't bind to
+set(APP_COMPILER_FLAGS_2AMi8o8xxxxxx_winbuiltin ${SW_USB_AUDIO_FLAGS} -DPID_AUDIO_2=0x001a)
+
+# Audio Class 1, Sync, I2S Master, 2xInput, 2xOutput
+set(APP_COMPILER_FLAGS_1SMi2o2xxxxxx ${SW_USB_AUDIO_FLAGS}     -DAUDIO_CLASS=1
+                                                               -DXUA_SYNCMODE=XUA_SYNCMODE_SYNC)
+
+
+# #
+# # Partially-tested build configs
+# #
+# include(${CMAKE_CURRENT_LIST_DIR}/configs_partial.cmake)
+
+# #
+# # Build (only) tested build configs
+# #
+# include(${CMAKE_CURRENT_LIST_DIR}/configs_build.cmake)
+
+# #
+# # Build configs used only for testing purposes
+# #
+# include(${CMAKE_CURRENT_LIST_DIR}/configs_test.cmake)
+
+# DFU upgrade/downgrade testing uses configs built with different version numbers
+set(APP_COMPILER_FLAGS_upgrade1 ${SW_USB_AUDIO_FLAGS} -DBCD_DEVICE_J=0x99
+                                                      -DBCD_DEVICE_M=0x0
+                                                      -DBCD_DEVICE_N=0x1)
+
+set(APP_COMPILER_FLAGS_upgrade2 ${SW_USB_AUDIO_FLAGS} -DBCD_DEVICE_J=0x99
+                                                      -DBCD_DEVICE_M=0x0
+                                                      -DBCD_DEVICE_N=0x2)
+
+
+set(APP_COMPILER_FLAGS_winbuiltin_upgrade1 ${SW_USB_AUDIO_FLAGS} -DPID_AUDIO_2=0x001a
+                                                      -DBCD_DEVICE_J=0x99
+                                                      -DBCD_DEVICE_M=0x0
+                                                      -DBCD_DEVICE_N=0x1)
+
+set(APP_COMPILER_FLAGS_winbuiltin_upgrade2 ${SW_USB_AUDIO_FLAGS} -DPID_AUDIO_2=0x001a
+                                                      -DBCD_DEVICE_J=0x99
+                                                      -DBCD_DEVICE_M=0x0
+                                                      -DBCD_DEVICE_N=0x2)
+
+# UAC1.0 DFU upgrade test configs
+set(APP_COMPILER_FLAGS_uac1_upgrade1 ${SW_USB_AUDIO_FLAGS} -DAUDIO_CLASS=1
+                                                      -DBCD_DEVICE_J=0x99
+                                                      -DBCD_DEVICE_M=0x0
+                                                      -DBCD_DEVICE_N=0x1)
+
+set(APP_COMPILER_FLAGS_uac1_upgrade2 ${SW_USB_AUDIO_FLAGS} -DAUDIO_CLASS=1
+                                                      -DBCD_DEVICE_J=0x99
+                                                      -DBCD_DEVICE_M=0x0
+                                                      -DBCD_DEVICE_N=0x2)
+
+XMOS_REGISTER_APP()
