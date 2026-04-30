@@ -4,7 +4,7 @@
 #ifndef APP_USB_AUD_XK_216_MC_H_
 #define APP_USB_AUD_XK_216_MC_H_
 
-/* Default to board version version 2.0 */
+/* Default to board version 2.0 */
 #ifndef XCORE_200_MC_AUDIO_HW_VERSION
 #define XCORE_200_MC_AUDIO_HW_VERSION 2
 #endif

@@ -52,6 +52,9 @@ def create_dfu_bin(board, config):
 def xtc_version():
     version_re = r"XTC version: (?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)"
     ret = subprocess.run(["xcc", "--version"], capture_output=True, text=True)
+    if ret.returncode != 0:
+        pytest.fail(f"Failed to get XTC Tools version with result {ret.returncode}, cmd {'xcc --version'}\nstdout:\n{ret.stdout}\nstderr:\n{ret.stderr}")
+
     match = re.search(version_re, ret.stdout)
     if not match:
         pytest.fail(f"Unable to get XTC Tools version: stdout={ret.stdout}")
@@ -93,26 +96,27 @@ def dfu_uncollect(pytestconfig, board, config, dfuapp):
     level = pytestconfig.getoption("level")
     if level == "smoke":
         if platform.system() == "Darwin":
-            # Just run on xk_316_mc at smoke level
-            return (board not in ["xk_316_mc"]) or (config not in ["2AMi10o10xssxxx"])
+            # Just run on xk_evk_xu316 or xk_316_mc at smoke level
+            return (board not in ["xk_evk_xu316"]) and not ((board in ["xk_316_mc"]) and (config in ["2AMi10o10xssxxx"]))
         else:
-            # Just run on xk_316_mc at smoke level
-            return (board not in ["xk_316_mc"]) or (config not in ["2AMi10o10xssxxx"])
+            # Just run on xk_evk_xu316 or xk_316_mc at smoke level
+            return (board not in ["xk_evk_xu316"]) and not ((board in ["xk_316_mc"]) and (config in ["2AMi10o10xssxxx"]))
     return False
 
-'''
-Sequence when testing apps (eg. xk_316_mc, 2AMi10o10xssxxx):
--download-> (xk_316_mc, upgrade1)
--download-> (xk_316_mc, upgrade2)
--upload-> test_dfu_upload.bin
--revert_factory-> (xk_316_mc, 2AMi10o10xssxxx)
--download-> test_dfu_upload.bin
--revert_factory
-'''
+
 @pytest.mark.uncollect_if(func=dfu_uncollect)
 @pytest.mark.parametrize(["board", "config"], dfu_testcases)
 @pytest.mark.parametrize("dfuapp", ["custom", "dfu-util"])
 def test_dfu(pytestconfig, board, config, dfuapp):
+    '''
+    Sequence when testing apps (eg. xk_316_mc, 2AMi10o10xssxxx):
+    -download-> (xk_316_mc, upgrade1)
+    -download-> (xk_316_mc, upgrade2)
+    -upload-> test_dfu_upload.bin
+    -revert_factory-> (xk_316_mc, 2AMi10o10xssxxx)
+    -download-> test_dfu_upload.bin
+    -revert_factory
+    '''
     adapter_dut = get_xtag_dut(pytestconfig, board)
     writeall = False
     if "old_tools" in config: # For the old_tools test the factory executable has been compiled and converted to a binary file with an older XTC tools version

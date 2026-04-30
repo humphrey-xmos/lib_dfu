@@ -387,8 +387,8 @@ pipeline {
                                                     unstash 'usb_dfu_xk_bin'
 
                                                     withXTAG(["usb_audio_mc_xs2_dut", "usb_audio_xcai_exp_dut"]) { xtagIds ->
-                                                        sh "pytest -v --level nightly --junitxml=pytest_result_mac_intel.xml \
-                                                            -o xk_216_mc_dut=${xtagIds[0]} -o xk_evk_xu316_dut=${xtagIds[1]} -k dfu"
+                                                        sh "pytest -v --level ${params.TEST_LEVEL} --junitxml=pytest_result_mac_intel.xml \
+                                                            -o xk_216_mc_dut=${xtagIds[0]} -o xk_evk_xu316_dut=${xtagIds[1]}"
                                                     }
                                                 }
                                             }
@@ -452,7 +452,7 @@ pipeline {
                                                     unstash 'usb_dfu_xk_bin'
 
                                                     withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                                                        sh "pytest -v --level nightly --junitxml=pytest_result_mac_arm.xml -o xk_316_mc_dut=${xtagIds[0]} -k dfu"
+                                                        sh "pytest -v --level ${params.TEST_LEVEL} --junitxml=pytest_result_mac_arm.xml -o xk_316_mc_dut=${xtagIds[0]}"
                                                     }
                                                 }
                                             }
@@ -508,7 +508,7 @@ pipeline {
                                                 unstash 'usb_dfu_xk_bin'
 
                                                 withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                                                    sh "pytest -v --level nightly --junitxml=pytest_result_win_11.xml -o xk_316_mc_dut=${xtagIds[0]} -k dfu"
+                                                    sh "pytest -v --level ${params.TEST_LEVEL} --junitxml=pytest_result_win_11.xml -o xk_316_mc_dut=${xtagIds[0]}"
                                                 }
                                             }
                                         }
