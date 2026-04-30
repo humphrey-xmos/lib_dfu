@@ -1,8 +1,8 @@
 lib_dfu change log
 ==================
 
-UNRELEASED
-----------
+2.1.0
+-----
 
   * CHANGED:  ``lib_dfu`` now fully supports both USB and I2C DFU devices.
   * CHANGED:  Flash erase changed from one call per transfer to many calls per

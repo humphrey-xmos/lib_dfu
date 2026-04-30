@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.49.0') _
+@Library('xmos_jenkins_shared_library@v0.51.1') _
 
 // Get XCommon CMake.
 // This is required for compiling a factory image for a DFU test using tools 15.2.1
@@ -40,7 +40,7 @@ pipeline {
         )
         string(
             name: 'XMOSDOC_VERSION',
-            defaultValue: 'v8.0.1',
+            defaultValue: 'v8.0.3',
             description: 'xmosdoc version'
         )
         string(
