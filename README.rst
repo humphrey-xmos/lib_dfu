@@ -5,7 +5,7 @@ lib_dfu: Device Firmware Upgrade (DFU) Library
 ##############################################
 
 :vendor: XMOS
-:version: 2.0.0
+:version: 2.1.0
 :scope: General Use
 :description: Device firmware upgrade over a serial interface
 :category: General Purpose
