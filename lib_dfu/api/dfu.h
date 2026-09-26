@@ -11,6 +11,14 @@
 #include "dfu_default_conf.h"
 #include "dfu_types.h"
 
+#define DFU_INTERFACE_PROTOCOL_RUNTIME 1
+#define DFU_INTERFACE_PROTOCOL_DFU_MODE 2
+
+#define DFU_INTF_SUBCLASS_DFU 1
+
+#define DFU_FUNC_DESC_TYPE 0x21
+#define DFU_FUNC_BCD_DFU_VERSION 0x0110
+
 /** API function return values */
 enum dfu_api_status {
   DFU_API_SUCCESS = 0,

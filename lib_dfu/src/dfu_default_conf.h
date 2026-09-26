@@ -42,6 +42,16 @@
 #define DFU_BCD_DEVICE 0x0100
 #endif
 
+/**
+ * DFU detach timeout in milliseconds
+ * 
+ * Specifies the time the device will wait after receiving a DFU_DETACH request before detaching.
+ * Default value is 500 milliseconds.
+ */
+#ifndef DFU_DETACH_TIME_OUT
+#define DFU_DETACH_TIME_OUT 500
+#endif
+
 #ifdef __DOXYGEN__
 /** Optional, user defined flash device specification for DFU to use.
  * 

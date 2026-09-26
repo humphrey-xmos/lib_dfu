@@ -6,7 +6,6 @@
 
 #include <xccompat.h>
 
-// #include "xua.h"
 #include "xud_device.h"
 #include "dfu.h"
 #include "dfu_types.h"
@@ -33,15 +32,15 @@
 #define DFU_SERIAL_NUMBER_STR_INDEX 0
 #endif
 
+#ifndef DFU_INTERFACE_STR_INDEX
+#define DFU_INTERFACE_STR_INDEX 0
+#endif
+
 USB_Descriptor_Device_t DFUdevDesc =
 {
     .bLength                        = sizeof(USB_Descriptor_Device_t),
     .bDescriptorType                = USB_DESCTYPE_DEVICE,
-#if _XUA_ENABLE_BOS_DESC
-    .bcdUSB                         = 0x0201,
-#else
-    .bcdUSB                         = 0x0200,
-#endif
+    .bcdUSB                         = XUD_BCD_USB,
     .bDeviceClass                   = 0, /* See interface */
     .bDeviceSubClass                = 0, /* See interface */
     .bDeviceProtocol                = 0, /* See interface */
@@ -82,36 +81,28 @@ USB_Config_Descriptor_DFU_t DFUcfgDesc = {
         .bNumInterfaces             = 1,
         .bConfigurationValue        = 0x01,
         .iConfiguration             = 0x00,
-#if (XUA_POWERMODE == XUA_POWERMODE_SELF)
-        .bmAttributes               = 192,
-#else
-        .bmAttributes               = 128,
-#endif
-        .bMaxPower                  = XUA_BMAX_POWER,
+        .bmAttributes               = XUD_GET_BMATTR_POWERMODE(),
+        .bMaxPower                  = XUD_BMAX_POWER,
     },
     .InterfaceDesc =
     {
-        .bLength                       = sizeof(USB_Descriptor_Interface_t),
-        .bDescriptorType               = USB_DESCTYPE_INTERFACE,
-        .bInterfaceNumber              = 0,
-        .bAlternateSetting             = 0x00,                     /* Must be 0 */
-        .bNumEndpoints                 = 0x00,
-        .bInterfaceClass               = 0xFE,
-        .bInterfaceSubClass            = 0x01,
-        .bInterfaceProtocol            = 0x02,
-#if (XUA_DFU_EN == 1)
-        .iInterface                    = offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
-#else
-        .iInterface                    = 0,
-#endif
+        .bLength                    = sizeof(USB_Descriptor_Interface_t),
+        .bDescriptorType            = USB_DESCTYPE_INTERFACE,
+        .bInterfaceNumber           = 0,
+        .bAlternateSetting          = 0x00,                     /* Must be 0 */
+        .bNumEndpoints              = 0x00,
+        .bInterfaceClass            = USB_CLASS_DFU,
+        .bInterfaceSubClass         = DFU_INTF_SUBCLASS_DFU,
+        .bInterfaceProtocol         = DFU_INTERFACE_PROTOCOL_DFU_MODE,
+        .iInterface                 = DFU_INTERFACE_STR_INDEX,
     },
     .FunctionalDesc = {
-        .bLength = sizeof(USB_DFU_Functional_Descriptor_t),
-        .bDescriptorType = 0x21, //  DFU FUNCTIONAL
-        .bmAttributes = DFU_FUNC_ATTRS,
-        .wDetachTimeOut = 250,
-        .wTransferSize = DFU_TRANSFER_SIZE_BYTES,
-        .bcdDFUVersion = 0x0110
+        .bLength                    = sizeof(USB_DFU_Functional_Descriptor_t),
+        .bDescriptorType            = DFU_FUNC_DESC_TYPE,
+        .bmAttributes               = DFU_FUNC_ATTRS,
+        .wDetachTimeOut             = DFU_DETACH_TIME_OUT,
+        .wTransferSize              = DFU_TRANSFER_SIZE_BYTES,
+        .bcdDFUVersion              = DFU_FUNC_BCD_DFU_VERSION
     }
 };
 

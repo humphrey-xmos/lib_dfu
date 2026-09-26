@@ -13,7 +13,7 @@
 #include "labels.h"
 
 extern bool quiet;
-extern bool verbose;
+bool verbose;
 
 #define RESET_TIMEOUT_MSEC 1000
 
@@ -26,7 +26,7 @@ int hal_connect(struct device_id device_id)
 #endif
 {
   const int shift = 0;
-  if (control_init_i2c(device_id.i2c_address << shift) != CONTROL_SUCCESS) {
+  if (control_init_i2c((unsigned char)(device_id.i2c_address << shift)) != CONTROL_SUCCESS) {
     PRINT_ERROR("Control initialisation over I2C failed\n");
     return APP_ERROR;
   }
@@ -74,7 +74,7 @@ int hal_read_command(int command, unsigned char payload[], size_t num_bytes)
   }
 
 #if CONTROL_USE_I2C && __xcore__
-  if (control_read_command(RESOURCE_ID_DFU, CONTROL_CMD_SET_READ(command), i_i2c, buffer, (num_bytes + sizeof(struct dfu_upload_header))) != CONTROL_SUCCESS)
+  if (control_read_command(RESOURCE_ID_DFU, (control_cmd_t)CONTROL_CMD_SET_READ(command), i_i2c, buffer, (num_bytes + sizeof(struct dfu_upload_header))) != CONTROL_SUCCESS)
 #else
   if (control_read_command(RESOURCE_ID_DFU, CONTROL_CMD_SET_READ((control_cmd_t)command), buffer, (num_bytes + sizeof(struct dfu_upload_header))) != CONTROL_SUCCESS)
 #endif
@@ -183,7 +183,11 @@ int hal_revert_factory(void)
     printf("HAL: revert factory\n");
   }
 
+#if CONTROL_USE_I2C && __xcore__
+  if (hal_write_command(XMOS_DFU_REVERTFACTORY, NULL, 0, i_i2c) != 0) {
+#else
   if (hal_write_command(XMOS_DFU_REVERTFACTORY, NULL, 0) != 0) {
+#endif
     /* Allow time for deferred task to action the revert request */
     sleep_milliseconds(RESET_TIMEOUT_MSEC);
     return APP_BAD_COMMS;
