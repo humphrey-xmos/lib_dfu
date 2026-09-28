@@ -4,7 +4,7 @@
 #define __argument_parser_h__
 
 #ifdef __XC__
-#define _Bool int
+#define _Bool uint8_t
 #endif
 #include <stdbool.h>
 #include "device_id.h"

@@ -13,7 +13,7 @@
 #include "labels.h"
 
 extern bool quiet;
-bool verbose;
+extern bool verbose;
 
 #define RESET_TIMEOUT_MSEC 1000
 
