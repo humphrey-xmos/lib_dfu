@@ -1,6 +1,12 @@
 lib_dfu change log
 ==================
 
+UNRELEASED
+----------
+
+  * ADDED:    Defines for building DFU descriptors, added XUD defines to
+    existing DFU descriptors.
+
 2.1.0
 -----
 
